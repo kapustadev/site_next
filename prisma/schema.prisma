@@ -51,6 +51,7 @@ model Project {
   managerId   String?
   manager     User?    @relation("ProjectManager", fields: [managerId], references: [id])
   tasks       Task[]
+  transactions Transaction[]
 }
 
 model Task {
@@ -88,10 +89,61 @@ model Plugin {
   name        String
   version     String
   description String?  @db.Text
-  fileUrl     String   // URL to the zip in S3 / Blob Storage
+  fileUrl     String
   createdAt   DateTime @default(now())
 
   // Relations
   uploaderId  String
   uploader    User     @relation(fields: [uploaderId], references: [id])
+}
+
+// ─── ФИНАНСЫ ───────────────────────────────────────────────
+
+enum TransactionType {
+  INCOME   // Доход (оплата от клиента)
+  EXPENSE  // Расход (зарплата, сервисы, покупки)
+}
+
+// Поддерживаемые валюты
+// PLN — базовая внутренняя валюта (злотые)
+// Остальные конвертируются через NBP API
+enum Currency {
+  PLN
+  USD
+  EUR
+  UAH
+  GBP
+  CHF
+  CZK
+  HUF
+}
+
+model Transaction {
+  id          String          @id @default(cuid())
+  type        TransactionType
+  description String
+  category    String?         // "Зарплата", "Сервисы", "Реклама", "Клиент" и т.д.
+
+  // Оригинальная сумма в валюте клиента/поставщика
+  amount      Float
+  currency    Currency        @default(PLN)
+
+  // Итоговая сумма в PLN (автоконвертация по курсу NBP)
+  amountPln   Float
+  exchangeRate Float          @default(1) // курс на дату транзакции
+
+  date        DateTime        @default(now())
+  createdAt   DateTime        @default(now())
+
+  // Привязка к проекту (опционально)
+  projectId   String?
+  project     Project?        @relation(fields: [projectId], references: [id], onDelete: SetNull)
+}
+
+// Кэш курсов валют NBP (обновляется раз в час)
+model ExchangeRateCache {
+  id          String   @id @default(cuid())
+  currency    String   @unique  // "USD", "EUR", ...
+  rateToPln   Float             // 1 единица валюты = X PLN
+  fetchedAt   DateTime @default(now())
 }

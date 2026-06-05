@@ -268,6 +268,28 @@ export default async function DashboardPage({
   const hour = new Date().getHours()
   const greeting = hour < 12 ? 'Доброе утро' : hour < 18 ? 'Добрый день' : 'Добрый вечер'
 
+  // Получаем реальные данные для владельца
+  if (role === 'OWNER') {
+    const { prisma } = await import('@/lib/prisma')
+    
+    // Текущий месяц
+    const now = new Date()
+    const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+    
+    const transactions = await prisma.transaction.findMany({
+      where: { date: { gte: firstDayOfMonth } }
+    })
+    
+    const revenue = transactions.filter(t => t.type === 'INCOME').reduce((sum, t) => sum + t.amountPln, 0)
+    const expenses = transactions.filter(t => t.type === 'EXPENSE').reduce((sum, t) => sum + t.amountPln, 0)
+    const profit = revenue - expenses
+    
+    const projectsCount = await prisma.project.count()
+    
+    // Заменяем глобальные MOCK
+    MOCK.finances = { revenue, expenses, profit }
+  }
+
   return (
     <div className={shellStyles.content}>
       <div className={styles.pageHeader}>
