@@ -1,7 +1,6 @@
 import { auth } from '@/auth'
 import { redirect } from 'next/navigation'
-import Sidebar from '@/components/layout/Sidebar'
-import styles from '@/components/layout/shell.module.css'
+import ClientShell from '@/components/layout/ClientShell'
 
 export default async function DashboardLayout({
   children,
@@ -24,11 +23,8 @@ export default async function DashboardLayout({
   }
 
   return (
-    <div className={styles.shell}>
-      <Sidebar user={user} locale={locale} />
-      <div className={styles.main}>
-        {children}
-      </div>
-    </div>
+    <ClientShell user={user} locale={locale}>
+      {children}
+    </ClientShell>
   )
 }

@@ -588,4 +588,21 @@
 }
 
 .btnSave:hover { background: var(--blue-light); }
-.btnSave:disabled { opacity: 0.6; cursor: not-allowed; }
+@media (max-width: 768px) {
+  .projectsGrid { grid-template-columns: 1fr; }
+  .formRow { grid-template-columns: 1fr; }
+  .board { padding-bottom: 24px; scroll-snap-type: x mandatory; }
+  .column { scroll-snap-align: center; }
+}
+
+@media (max-width: 480px) {
+  .modal {
+    margin-top: auto;
+    border-radius: 20px 20px 0 0;
+    max-height: 85vh;
+  }
+  .modalOverlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+}

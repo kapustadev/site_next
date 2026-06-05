@@ -404,3 +404,19 @@
     grid-template-columns: 1fr 1fr;
   }
 }
+
+@media (max-width: 480px) {
+  .statsGrid {
+    grid-template-columns: 1fr;
+  }
+  .chartPlaceholder {
+    overflow-x: auto;
+    padding-bottom: 8px;
+  }
+  .chartBars {
+    min-width: 300px;
+  }
+  .chartLabels {
+    min-width: 300px;
+  }
+}

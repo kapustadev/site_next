@@ -486,4 +486,19 @@
 @media (max-width: 768px) {
   .statsRow { grid-template-columns: 1fr 1fr; }
   .searchInput { width: 160px; }
+  .tableWrap { overflow-x: auto; }
+  .tableWrap :global(table) { min-width: 700px; }
+}
+
+@media (max-width: 480px) {
+  .statsRow { grid-template-columns: 1fr; }
+  .formRow { grid-template-columns: 1fr; }
+  .modal {
+    margin-top: auto;
+    border-radius: 20px 20px 0 0;
+  }
+  .modalOverlay {
+    align-items: flex-end;
+    padding: 0;
+  }
 }

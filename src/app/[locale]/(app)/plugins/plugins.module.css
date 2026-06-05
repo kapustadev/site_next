@@ -1,5 +1,5 @@
 /* ============================================================
-   KAPUSTA.DEV — Finances Styles
+   KAPUSTA.DEV — Plugins Styles
    ============================================================ */
 
 .header {
@@ -46,133 +46,129 @@
   transform: translateY(-1px);
 }
 
-.statsRow {
+.pluginsGrid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-  margin-bottom: 24px;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
 }
 
-.statCard {
+.pluginCard {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  padding: 20px 22px;
+  padding: 20px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  transition: all var(--duration) var(--ease);
 }
 
-.statTop {
+.pluginCard:hover {
+  border-color: var(--border-hover);
+  background: rgba(255,255,255,0.02);
+}
+
+.pluginTop {
   display: flex;
-  align-items: center;
   justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
 }
 
-.statLabel {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--text-2);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-
-.statIcon {
-  width: 32px;
-  height: 32px;
-  border-radius: 9px;
+.pluginIcon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--blue), #7c3aed);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 16px;
+  color: #fff;
 }
 
-.statValue {
-  font-size: 28px;
-  font-weight: 800;
-  color: var(--text);
-  letter-spacing: -0.04em;
-  line-height: 1;
+.pluginActions {
+  display: flex;
+  gap: 8px;
 }
 
-.tableWrap {
-  background: var(--surface);
+.actionBtn {
+  background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-}
-
-.tableWrap :global(table) {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.tableWrap :global(thead tr) {
-  border-bottom: 1px solid var(--border);
-}
-
-.tableWrap :global(th) {
-  text-align: left;
-  padding: 12px 20px;
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--text-3);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-}
-
-.tableWrap :global(tbody tr) {
-  border-bottom: 1px solid var(--border);
-  transition: background var(--duration);
-}
-
-.tableWrap :global(tbody tr:last-child) { border-bottom: none; }
-.tableWrap :global(tbody tr:hover) { background: rgba(255,255,255,0.02); }
-
-.tableWrap :global(td) {
-  padding: 14px 20px;
-  vertical-align: middle;
-  font-size: 13px;
-  color: var(--text);
-}
-
-.amountIncome { color: var(--green); font-weight: 600; }
-.amountExpense { color: var(--red); font-weight: 600; }
-
-.subAmount {
-  font-size: 11px;
-  color: var(--text-3);
-  margin-top: 2px;
-}
-
-.typeBadge {
-  display: inline-flex;
+  color: var(--text-2);
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
   align-items: center;
-  padding: 3px 8px;
-  border-radius: 99px;
-  font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.typeBadgeIncome { background: rgba(34,197,94,0.12); color: #22c55e; }
-.typeBadgeExpense { background: rgba(239,68,68,0.12); color: #ef4444; }
-
-.delBtn {
-  background: none;
-  border: none;
-  color: var(--text-3);
+  justify-content: center;
   cursor: pointer;
-  padding: 4px;
-  border-radius: 6px;
-  display: inline-flex;
   transition: all var(--duration);
 }
 
-.delBtn:hover {
-  background: rgba(239,68,68,0.1);
+.actionBtn:hover {
+  background: var(--bg-2);
+  color: var(--text);
+}
+
+.actionBtnDanger:hover {
   color: var(--red);
+  background: rgba(239,68,68,0.1);
+  border-color: transparent;
+}
+
+.pluginName {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+
+.pluginVersion {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 6px;
+  background: var(--blue-dim);
+  color: #818cf8;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  margin-bottom: 12px;
+}
+
+.pluginDesc {
+  font-size: 13px;
+  color: var(--text-2);
+  line-height: 1.5;
+  margin-bottom: 20px;
+  flex: 1;
+}
+
+.pluginFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  font-size: 11px;
+  color: var(--text-3);
+}
+
+.downloadBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--blue);
+  color: #fff;
+  text-decoration: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  transition: background var(--duration);
+}
+
+.downloadBtn:hover {
+  background: var(--blue-light);
 }
 
 /* Modal */
@@ -186,10 +182,7 @@
   align-items: center;
   justify-content: center;
   padding: 24px;
-  animation: fadeIn 0.15s ease;
 }
-
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
 .modal {
   background: var(--bg-2);
@@ -197,10 +190,7 @@
   border-radius: var(--radius-xl);
   width: 100%;
   max-width: 500px;
-  animation: slideUp 0.2s ease;
 }
-
-@keyframes slideUp { from { transform: translateY(16px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
 .modalHeader {
   display: flex;
@@ -231,7 +221,7 @@
 }
 .formInput:focus { border-color: var(--blue); outline: none; box-shadow: 0 0 0 3px var(--blue-dim); }
 
-.formRow { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.formTextarea { resize: vertical; min-height: 80px; }
 
 .modalFooter {
   display: flex;
@@ -244,41 +234,51 @@
 .btnCancel { height: 38px; padding: 0 16px; background: var(--surface); color: var(--text-2); border: 1px solid var(--border); border-radius: var(--radius); font-size: 13px; font-weight: 500; cursor: pointer; }
 .btnCancel:hover { border-color: var(--border-hover); color: var(--text); }
 
-.btnSave { height: 38px; padding: 0 20px; background: var(--blue); color: #fff; border: none; border-radius: var(--radius); font-size: 13px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 14px var(--blue-glow); }
+.btnSave { height: 38px; padding: 0 20px; background: var(--blue); color: #fff; border: none; border-radius: var(--radius); font-size: 13px; font-weight: 600; cursor: pointer; }
 .btnSave:hover { background: var(--blue-light); }
 .btnSave:disabled { opacity: 0.5; cursor: not-allowed; }
 
-.nbpNote {
-  font-size: 11px;
-  color: var(--text-3);
-  margin-top: 4px;
-  display: flex;
-  align-items: center;
-  gap: 4px;
+.emptyState {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 60px 20px;
+  background: var(--surface);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-lg);
 }
 
-@media (max-width: 768px) {
-  .statsRow {
-    grid-template-columns: 1fr;
-  }
-  .tableWrap {
-    overflow-x: auto;
-  }
-  .tableWrap :global(table) {
-    min-width: 600px;
-  }
-}
+.emptyIcon { font-size: 48px; margin-bottom: 16px; opacity: 0.5; }
+.emptyText { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+.emptyHint { font-size: 13px; color: var(--text-3); }
 
-@media (max-width: 480px) {
-  .modal {
-    margin-top: auto;
-    border-radius: 20px 20px 0 0;
-  }
-  .modalOverlay {
-    align-items: flex-end;
-    padding: 0;
-  }
-  .formRow {
-    grid-template-columns: 1fr;
-  }
+/* Custom file input */
+.fileInputWrap {
+  position: relative;
+  border: 2px dashed var(--border);
+  border-radius: var(--radius);
+  padding: 30px;
+  text-align: center;
+  background: var(--surface);
+  cursor: pointer;
+  transition: all var(--duration);
+}
+.fileInputWrap:hover {
+  border-color: var(--blue);
+  background: rgba(1, 14, 208, 0.05);
+}
+.fileInput {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+.fileInputText {
+  font-size: 13px;
+  color: var(--text-2);
+  font-weight: 500;
+}
+.fileInputText strong {
+  color: var(--blue);
 }
