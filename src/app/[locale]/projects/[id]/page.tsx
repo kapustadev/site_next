@@ -21,7 +21,13 @@ export default async function ProjectPage({
     include: {
       manager: true,
       tasks: {
-        include: { assignee: true },
+        include: { 
+          assignee: true,
+          comments: {
+            include: { author: { select: { id: true, name: true, role: true } } },
+            orderBy: { createdAt: 'asc' }
+          }
+        },
         orderBy: { createdAt: 'asc' }
       }
     }
@@ -44,6 +50,7 @@ export default async function ProjectPage({
         users={users}
         canEdit={canEdit}
         isReadOnly={isReadOnly}
+        currentUserId={(session.user as any).id}
       />
     </div>
   )

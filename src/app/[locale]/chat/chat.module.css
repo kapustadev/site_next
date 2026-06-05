@@ -1,0 +1,196 @@
+/* ============================================================
+   KAPUSTA.DEV — Chat Styles
+   ============================================================ */
+
+.chatWrap {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 56px); /* 56px is topbar height (though we don't have topbar, maybe padding) */
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin: -10px; /* Counter content padding if needed */
+}
+
+.chatHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-2);
+}
+
+.chatTitle {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.onlineDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 8px var(--green);
+}
+
+.chatBody {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.messageRow {
+  display: flex;
+  gap: 12px;
+  max-width: 80%;
+}
+
+.messageRowOwn {
+  align-self: flex-end;
+  flex-direction: row-reverse;
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(135deg, var(--blue), #7c3aed);
+}
+
+.messageContent {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.messageRowOwn .messageContent {
+  align-items: flex-end;
+}
+
+.authorName {
+  font-size: 11px;
+  color: var(--text-3);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.roleBadge {
+  background: var(--surface-2);
+  padding: 1px 6px;
+  border-radius: 99px;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-2);
+}
+
+.bubble {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  padding: 10px 14px;
+  border-radius: 2px 14px 14px 14px;
+  font-size: 13.5px;
+  color: var(--text);
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.messageRowOwn .bubble {
+  background: var(--blue);
+  color: #fff;
+  border-color: var(--blue);
+  border-radius: 14px 2px 14px 14px;
+}
+
+.time {
+  font-size: 10px;
+  color: var(--text-3);
+  align-self: flex-end;
+}
+
+.messageRowOwn .time {
+  color: rgba(255,255,255,0.7);
+}
+
+.chatInputWrap {
+  padding: 16px 24px;
+  border-top: 1px solid var(--border);
+  background: var(--bg-2);
+}
+
+.chatForm {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+}
+
+.chatInput {
+  flex: 1;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 16px;
+  font-size: 14px;
+  color: var(--text);
+  resize: none;
+  min-height: 44px;
+  max-height: 150px;
+  transition: border-color var(--duration);
+  font-family: var(--font);
+}
+
+.chatInput:focus {
+  outline: none;
+  border-color: var(--blue);
+}
+
+.chatInput::placeholder { color: var(--text-3); }
+
+.sendBtn {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  border-radius: var(--radius);
+  background: var(--blue);
+  color: #fff;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--duration);
+}
+
+.sendBtn:hover {
+  background: var(--blue-light);
+  transform: translateY(-1px);
+}
+
+.sendBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .messageRow { max-width: 95%; }
+  .chatWrap { height: calc(100vh - 100px); }
+}

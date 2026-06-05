@@ -36,6 +36,7 @@ model User {
   tasksAssigned   Task[]    @relation("TaskAssignee")
   comments        Comment[]
   pluginsUploaded Plugin[]
+  messages        Message[]
 }
 
 model Project {
@@ -146,4 +147,16 @@ model ExchangeRateCache {
   currency    String   @unique  // "USD", "EUR", ...
   rateToPln   Float             // 1 единица валюты = X PLN
   fetchedAt   DateTime @default(now())
+}
+
+// ─── ВНУТРЕННИЕ КОММУНИКАЦИИ ───────────────────────────────────
+
+model Message {
+  id        String   @id @default(cuid())
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+
+  // Relations
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
 }

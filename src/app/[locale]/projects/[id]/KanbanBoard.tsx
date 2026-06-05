@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react'
 import Link from 'next/link'
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd'
 import { createTask, updateTaskStatus, deleteTask } from '@/actions'
+import { addComment, deleteComment } from '@/actions/communications'
 import styles from '../projects.module.css'
 
 const COLUMNS = [
@@ -15,6 +16,14 @@ const COLUMNS = [
   { id: 'DONE',        label: 'Готово',       color: '#22c55e' },
 ]
 
+interface Comment {
+  id: string
+  content: string
+  createdAt: Date
+  authorId: string
+  author: { id: string; name: string; role: string }
+}
+
 interface Task {
   id: string
   title: string
@@ -22,6 +31,7 @@ interface Task {
   status: string
   dueDate: Date | null
   assignee: { id: string; name: string } | null
+  comments: Comment[]
 }
 
 interface Project {
@@ -43,12 +53,14 @@ export default function KanbanBoard({
   users,
   canEdit,
   isReadOnly,
+  currentUserId,
 }: {
   project: Project
   locale: string
   users: User[]
   canEdit: boolean
   isReadOnly: boolean
+  currentUserId: string
 }) {
   const [tasks, setTasks] = useState<Task[]>(project.tasks)
   const [addingCol, setAddingCol] = useState<string | null>(null)
@@ -56,6 +68,10 @@ export default function KanbanBoard({
   const [showAddModal, setShowAddModal] = useState<string | null>(null)
   const [modalForm, setModalForm] = useState({ title: '', description: '', assigneeId: '', dueDate: '' })
   const [isPending, startTransition] = useTransition()
+  
+  // Task Details Modal
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null)
+  const [commentText, setCommentText] = useState('')
 
   function getColumnTasks(colId: string) {
     return tasks.filter(t => t.status === colId)
@@ -95,7 +111,7 @@ export default function KanbanBoard({
     if (!newTaskTitle.trim()) { setAddingCol(null); return }
     startTransition(async () => {
       const task = await createTask({ title: newTaskTitle, projectId: project.id, status: colId })
-      setTasks(prev => [...prev, { ...task, assignee: null } as any])
+      setTasks(prev => [...prev, { ...task, assignee: null, comments: [] } as any])
       setNewTaskTitle('')
       setAddingCol(null)
     })
@@ -114,7 +130,7 @@ export default function KanbanBoard({
         dueDate: modalForm.dueDate || undefined,
       })
       const assignee = users.find(u => u.id === modalForm.assigneeId) ?? null
-      setTasks(prev => [...prev, { ...task, assignee } as any])
+      setTasks(prev => [...prev, { ...task, assignee, comments: [] } as any])
       setModalForm({ title: '', description: '', assigneeId: '', dueDate: '' })
       setShowAddModal(null)
     })
@@ -125,6 +141,42 @@ export default function KanbanBoard({
     startTransition(async () => {
       await deleteTask(taskId, project.id)
       setTasks(prev => prev.filter(t => t.id !== taskId))
+      if (selectedTask?.id === taskId) setSelectedTask(null)
+    })
+  }
+
+  async function handleAddComment(e: React.FormEvent) {
+    e.preventDefault()
+    if (!commentText.trim() || !selectedTask) return
+    
+    startTransition(async () => {
+      const comment = await addComment(selectedTask.id, commentText)
+      const updatedTasks = tasks.map(t => {
+        if (t.id === selectedTask.id) {
+          const updatedTask = { ...t, comments: [...t.comments, comment as any] }
+          setSelectedTask(updatedTask)
+          return updatedTask
+        }
+        return t
+      })
+      setTasks(updatedTasks)
+      setCommentText('')
+    })
+  }
+
+  async function handleDelComment(commentId: string) {
+    if (!confirm('Удалить комментарий?')) return
+    startTransition(async () => {
+      await deleteComment(commentId)
+      const updatedTasks = tasks.map(t => {
+        if (t.id === selectedTask?.id) {
+          const updatedTask = { ...t, comments: t.comments.filter(c => c.id !== commentId) }
+          setSelectedTask(updatedTask)
+          return updatedTask
+        }
+        return t
+      })
+      setTasks(updatedTasks)
     })
   }
 
@@ -211,6 +263,7 @@ export default function KanbanBoard({
                                 {...provided.draggableProps}
                                 {...provided.dragHandleProps}
                                 className={`${styles.taskCard} ${snapshot.isDragging ? styles.taskCardDragging : ''}`}
+                                onClick={() => setSelectedTask(task)}
                               >
                                 <div className={styles.taskCardTitle}>{task.title}</div>
                                 <div className={styles.taskCardFooter}>
@@ -223,6 +276,11 @@ export default function KanbanBoard({
                                         {getInitials(task.assignee.name)}
                                       </div>
                                     )}
+                                    {task.comments?.length > 0 && (
+                                      <div style={{ fontSize: '10px', color: 'var(--text-3)', display: 'flex', alignItems: 'center', gap: '3px' }}>
+                                        💬 {task.comments.length}
+                                      </div>
+                                    )}
                                   </div>
                                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                     {due && (
@@ -233,17 +291,6 @@ export default function KanbanBoard({
                                         </svg>
                                         {due.text}
                                       </div>
-                                    )}
-                                    {canEdit && (
-                                      <button
-                                        style={{ background: 'none', border: 'none', color: 'var(--text-3)', cursor: 'pointer', padding: '2px', borderRadius: '4px', display: 'flex' }}
-                                        onClick={() => handleDeleteTask(task.id)}
-                                        title="Удалить"
-                                      >
-                                        <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
-                                          <path d="M2 2l7 7M9 2L2 9" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
-                                        </svg>
-                                      </button>
                                     )}
                                   </div>
                                 </div>
@@ -285,7 +332,7 @@ export default function KanbanBoard({
         </div>
       </DragDropContext>
 
-      {/* Full Task Modal */}
+      {/* Full Task Create Modal */}
       {showAddModal && (
         <div className={styles.modalOverlay} onClick={() => setShowAddModal(null)}>
           <div className={styles.modal} onClick={e => e.stopPropagation()}>
@@ -369,6 +416,110 @@ export default function KanbanBoard({
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Task Details Modal (with Comments) */}
+      {selectedTask && (
+        <div className={styles.modalOverlay} onClick={() => setSelectedTask(null)}>
+          <div className={styles.modal} onClick={e => e.stopPropagation()} style={{ maxWidth: '640px' }}>
+            <div className={styles.modalHeader}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span className={styles.modalTitle}>{selectedTask.title}</span>
+                <span className={styles.columnCount} style={{ background: COLUMNS.find(c => c.id === selectedTask.status)?.color + '20', color: COLUMNS.find(c => c.id === selectedTask.status)?.color }}>
+                  {COLUMNS.find(c => c.id === selectedTask.status)?.label}
+                </span>
+              </div>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                {canEdit && (
+                  <button className={styles.modalClose} onClick={() => handleDeleteTask(selectedTask.id)} title="Удалить задачу" style={{ color: 'var(--red)' }}>
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 3h12M4 3V2h6v1M3 3l.5 8.5h7L11 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                  </button>
+                )}
+                <button className={styles.modalClose} onClick={() => setSelectedTask(null)}>
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <path d="M3 3l10 10M13 3L3 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+            
+            <div className={styles.modalBody} style={{ gap: '24px' }}>
+              {/* Info Section */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                {selectedTask.description && (
+                  <div>
+                    <div className={styles.formLabel} style={{ marginBottom: '6px' }}>Описание</div>
+                    <div style={{ fontSize: '13px', color: 'var(--text)', lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>
+                      {selectedTask.description}
+                    </div>
+                  </div>
+                )}
+                <div style={{ display: 'flex', gap: '24px' }}>
+                  {selectedTask.assignee && (
+                    <div>
+                      <div className={styles.formLabel} style={{ marginBottom: '6px' }}>Исполнитель</div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: 500 }}>
+                        <div className={styles.taskAssignee}>{getInitials(selectedTask.assignee.name)}</div>
+                        {selectedTask.assignee.name}
+                      </div>
+                    </div>
+                  )}
+                  {selectedTask.dueDate && (
+                    <div>
+                      <div className={styles.formLabel} style={{ marginBottom: '6px' }}>Дедлайн</div>
+                      <div style={{ fontSize: '13px', color: 'var(--text)' }}>
+                        {new Date(selectedTask.dueDate).toLocaleDateString('ru-RU')}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Comments Section */}
+              <div style={{ borderTop: '1px solid var(--border)', paddingTop: '24px' }}>
+                <div className={styles.formLabel} style={{ marginBottom: '16px' }}>Комментарии</div>
+                
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '20px', maxHeight: '300px', overflowY: 'auto' }}>
+                  {selectedTask.comments.length === 0 ? (
+                    <div style={{ fontSize: '12px', color: 'var(--text-3)' }}>Нет комментариев</div>
+                  ) : (
+                    selectedTask.comments.map(c => (
+                      <div key={c.id} style={{ display: 'flex', gap: '12px' }}>
+                        <div className={styles.taskAssignee}>{getInitials(c.author.name)}</div>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '4px' }}>
+                            <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text)' }}>{c.author.name}</span>
+                            <span style={{ fontSize: '10px', color: 'var(--text-3)' }}>{new Date(c.createdAt).toLocaleString('ru-RU')}</span>
+                            {(c.authorId === currentUserId || users.some(u => u.id === currentUserId && ['OWNER', 'PM'].includes(u.role))) && (
+                              <button onClick={() => handleDelComment(c.id)} style={{ background: 'none', border: 'none', color: 'var(--red)', fontSize: '10px', cursor: 'pointer', padding: 0 }}>удалить</button>
+                            )}
+                          </div>
+                          <div style={{ fontSize: '13px', color: 'var(--text)', lineHeight: 1.4, whiteSpace: 'pre-wrap' }}>
+                            {c.content}
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+
+                {/* Add Comment Form */}
+                <form onSubmit={handleAddComment} style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
+                  <textarea
+                    className={styles.formInput}
+                    placeholder="Написать комментарий..."
+                    value={commentText}
+                    onChange={e => setCommentText(e.target.value)}
+                    style={{ minHeight: '40px', resize: 'vertical' }}
+                  />
+                  <button type="submit" className={styles.btnSave} disabled={isPending || !commentText.trim()} style={{ height: 'auto', padding: '10px 16px' }}>
+                    {isPending ? '...' : 'Отправить'}
+                  </button>
+                </form>
+              </div>
+            </div>
           </div>
         </div>
       )}

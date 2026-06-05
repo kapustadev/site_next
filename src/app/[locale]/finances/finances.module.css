@@ -102,16 +102,16 @@
   overflow: hidden;
 }
 
-table {
+.tableWrap :global(table) {
   width: 100%;
   border-collapse: collapse;
 }
 
-thead tr {
+.tableWrap :global(thead tr) {
   border-bottom: 1px solid var(--border);
 }
 
-th {
+.tableWrap :global(th) {
   text-align: left;
   padding: 12px 20px;
   font-size: 11px;
@@ -121,15 +121,15 @@ th {
   letter-spacing: 0.08em;
 }
 
-tbody tr {
+.tableWrap :global(tbody tr) {
   border-bottom: 1px solid var(--border);
   transition: background var(--duration);
 }
 
-tbody tr:last-child { border-bottom: none; }
-tbody tr:hover { background: rgba(255,255,255,0.02); }
+.tableWrap :global(tbody tr:last-child) { border-bottom: none; }
+.tableWrap :global(tbody tr:hover) { background: rgba(255,255,255,0.02); }
 
-td {
+.tableWrap :global(td) {
   padding: 14px 20px;
   vertical-align: middle;
   font-size: 13px;
