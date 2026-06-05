@@ -1,0 +1,591 @@
+/* ============================================================
+   KAPUSTA.DEV — Projects + Kanban Styles
+   ============================================================ */
+
+/* ---- Projects list ---- */
+.page { padding: 0; }
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 28px;
+}
+
+.title {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text);
+  letter-spacing: -0.03em;
+}
+
+.subtitle {
+  font-size: 13px;
+  color: var(--text-2);
+  margin-top: 3px;
+}
+
+.addBtn {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: var(--blue);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius);
+  padding: 0 18px;
+  height: 38px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--duration) var(--ease);
+  box-shadow: 0 4px 16px var(--blue-glow);
+}
+
+.addBtn:hover {
+  background: var(--blue-light);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 24px var(--blue-glow);
+}
+
+/* ---- Grid of project cards ---- */
+.projectsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+.projectCard {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  cursor: pointer;
+  transition: all var(--duration) var(--ease);
+  text-decoration: none;
+  display: block;
+  position: relative;
+  overflow: hidden;
+}
+
+.projectCard:hover {
+  border-color: var(--border-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+}
+
+.projectCardAccent {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+}
+
+.projectCardTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.projectName {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.02em;
+  line-height: 1.3;
+}
+
+.projectDesc {
+  font-size: 12px;
+  color: var(--text-2);
+  margin-top: 4px;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.projectCardMenu {
+  background: none;
+  border: none;
+  color: var(--text-3);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  transition: all var(--duration) var(--ease);
+}
+
+.projectCardMenu:hover { background: var(--surface-2); color: var(--text); }
+
+.projectMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.metaRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.metaLabel {
+  font-size: 11px;
+  color: var(--text-3);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.metaValue {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-2);
+}
+
+.projectProgress {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.progressRow {
+  display: flex;
+  justify-content: space-between;
+}
+
+.progressLabel { font-size: 11px; color: var(--text-3); }
+.progressPct { font-size: 11px; font-weight: 700; color: var(--text-2); }
+
+.progressBar {
+  height: 5px;
+  background: var(--surface-2);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  border-radius: 99px;
+  transition: width 0.5s var(--ease);
+}
+
+/* ---- Empty state ---- */
+.emptyState {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 24px;
+  color: var(--text-3);
+  gap: 12px;
+  text-align: center;
+}
+
+.emptyIcon {
+  font-size: 48px;
+  opacity: 0.5;
+}
+
+.emptyText {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-2);
+}
+
+.emptyHint { font-size: 13px; }
+
+/* ─────────────────────────────────────────────
+   KANBAN BOARD
+─────────────────────────────────────────────── */
+.boardPage { display: flex; flex-direction: column; height: 100%; }
+
+.boardHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.backBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-2);
+  font-size: 13px;
+  font-weight: 500;
+  padding: 7px 14px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all var(--duration) var(--ease);
+}
+
+.backBtn:hover { border-color: var(--border-hover); color: var(--text); }
+
+.boardTitle {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--text);
+  letter-spacing: -0.03em;
+}
+
+.boardActions {
+  margin-left: auto;
+  display: flex;
+  gap: 8px;
+}
+
+.board {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 16px;
+  flex: 1;
+}
+
+.board::-webkit-scrollbar { height: 6px; }
+
+/* Column */
+.column {
+  min-width: 260px;
+  width: 260px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 200px);
+}
+
+.columnHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 14px 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.columnTitleWrap { display: flex; align-items: center; gap: 8px; }
+
+.columnDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.columnTitle {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.columnCount {
+  background: var(--surface-2);
+  color: var(--text-3);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 1px 7px;
+  border-radius: 99px;
+}
+
+.columnAddBtn {
+  background: none;
+  border: none;
+  color: var(--text-3);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 4px;
+  border-radius: 5px;
+  transition: all var(--duration) var(--ease);
+}
+
+.columnAddBtn:hover { background: var(--surface-2); color: var(--text); }
+
+.columnBody {
+  padding: 10px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+/* Task card */
+.taskCard {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px;
+  cursor: pointer;
+  transition: all var(--duration) var(--ease);
+  user-select: none;
+}
+
+.taskCard:hover {
+  border-color: var(--border-hover);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+}
+
+.taskCardDragging {
+  box-shadow: 0 12px 32px rgba(0,0,0,0.4);
+  border-color: var(--blue);
+  transform: rotate(2deg);
+}
+
+.taskCardTitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.4;
+  margin-bottom: 8px;
+}
+
+.taskCardMeta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.taskCardTags {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.taskTag {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 99px;
+}
+
+.taskCardFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+}
+
+.taskAssignee {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  background: linear-gradient(135deg, var(--blue), #7c3aed);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.taskDue {
+  font-size: 10px;
+  color: var(--text-3);
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.taskDueUrgent { color: var(--red); }
+
+/* ── Add task form ── */
+.addTaskForm {
+  padding: 10px;
+  border-top: 1px solid var(--border);
+}
+
+.addTaskInput {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+  font-size: 13px;
+  color: var(--text);
+  resize: none;
+  min-height: 60px;
+  transition: border-color var(--duration) var(--ease);
+}
+
+.addTaskInput::placeholder { color: var(--text-3); }
+.addTaskInput:focus { border-color: var(--blue); outline: none; }
+
+.addTaskActions {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.addTaskSave {
+  flex: 1;
+  height: 32px;
+  background: var(--blue);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--duration) var(--ease);
+}
+
+.addTaskSave:hover { background: var(--blue-light); }
+
+.addTaskCancel {
+  height: 32px;
+  padding: 0 12px;
+  background: var(--surface-2);
+  color: var(--text-2);
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+/* ── Modal ── */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(4px);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  animation: fadeIn 0.15s var(--ease);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  width: 100%;
+  max-width: 560px;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: slideUp 0.2s var(--ease);
+}
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border);
+}
+
+.modalTitle {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.modalClose {
+  background: none;
+  border: none;
+  color: var(--text-2);
+  cursor: pointer;
+  display: flex;
+  padding: 4px;
+  border-radius: 6px;
+  transition: all var(--duration) var(--ease);
+}
+
+.modalClose:hover { background: var(--surface); color: var(--text); }
+
+.modalBody { padding: 24px; display: flex; flex-direction: column; gap: 16px; }
+
+.formField { display: flex; flex-direction: column; gap: 6px; }
+
+.formLabel { font-size: 12px; font-weight: 600; color: var(--text-2); letter-spacing: 0.02em; text-transform: uppercase; }
+
+.formInput {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  font-size: 14px;
+  color: var(--text);
+  transition: border-color var(--duration) var(--ease);
+  font-family: var(--font);
+}
+
+.formInput::placeholder { color: var(--text-3); }
+.formInput:focus { border-color: var(--blue); outline: none; box-shadow: 0 0 0 3px var(--blue-dim); }
+
+.formTextarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.formRow { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+.modalFooter {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  padding: 16px 24px;
+  border-top: 1px solid var(--border);
+}
+
+.btnCancel {
+  height: 38px;
+  padding: 0 16px;
+  background: var(--surface);
+  color: var(--text-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--duration) var(--ease);
+}
+
+.btnCancel:hover { border-color: var(--border-hover); color: var(--text); }
+
+.btnSave {
+  height: 38px;
+  padding: 0 20px;
+  background: var(--blue);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--duration) var(--ease);
+  box-shadow: 0 4px 14px var(--blue-glow);
+}
+
+.btnSave:hover { background: var(--blue-light); }
+.btnSave:disabled { opacity: 0.6; cursor: not-allowed; }
