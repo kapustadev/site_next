@@ -186,18 +186,56 @@
 
 .logoText {
   font-size: 16px;
-  font-weight: 700;
+  font-weight: 800;
   color: var(--text);
-  letter-spacing: -0.02em;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
-.logoText span {
-  color: var(--text-3);
-  font-weight: 400;
+/* ---- Mode Switcher ---- */
+.modeSwitcher {
+  display: flex;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 4px;
+  gap: 4px;
+  margin-bottom: 32px;
+}
+
+.modeBtn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  height: 38px;
+  border-radius: calc(var(--radius) - 3px);
+  background: transparent;
+  color: var(--text-2);
+  font-size: 13px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: all var(--duration) var(--ease);
+  white-space: nowrap;
+}
+
+.modeBtn:hover {
+  color: var(--text);
+  background: var(--surface-2);
+}
+
+.modeBtnActive {
+  background: var(--bg) !important;
+  color: var(--text) !important;
+  font-weight: 600;
+  border: 1px solid var(--border);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.3);
 }
 
 .formHeader {
-  margin-bottom: 36px;
+  margin-bottom: 28px;
 }
 
 .formTitle {
@@ -286,6 +324,16 @@
   justify-content: center;
   gap: 8px;
   letter-spacing: -0.01em;
+}
+
+.submitBtnClient {
+  background: linear-gradient(135deg, #1a27e0, #7c3aed);
+  box-shadow: 0 4px 24px rgba(124, 58, 237, 0.35);
+}
+
+.submitBtnClient:hover:not(:disabled) {
+  background: linear-gradient(135deg, #2533f0, #8b47f0);
+  box-shadow: 0 6px 32px rgba(124, 58, 237, 0.5);
 }
 
 .submitBtn:hover:not(:disabled) {

@@ -5,8 +5,11 @@ import { signIn } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import styles from './login.module.css'
 
+type LoginMode = 'employee' | 'client'
+
 export default function LoginPage() {
   const router = useRouter()
+  const [mode, setMode] = useState<LoginMode>('employee')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -31,6 +34,13 @@ export default function LoginPage() {
     }
   }
 
+  function switchMode(m: LoginMode) {
+    setMode(m)
+    setError('')
+    setEmail('')
+    setPassword('')
+  }
+
   return (
     <div className={styles.page}>
       {/* ---- Left Artwork ---- */}
@@ -49,7 +59,7 @@ export default function LoginPage() {
           <h1 className={styles.artworkTitle}>
             Внутренняя<br />
             платформа<br />
-            <span>Kapusta.dev</span>
+            <span>KAPUSTA.DEV</span>
           </h1>
           <p className={styles.artworkSub}>
             Управление проектами, задачами, финансами и командой — в одном месте.
@@ -63,16 +73,46 @@ export default function LoginPage() {
 
         <div className={styles.logo}>
           <div className={styles.logoMark}>K</div>
-          <div className={styles.logoText}>
-            Kapusta<span>.dev</span>
-          </div>
+          <div className={styles.logoText}>KAPUSTA.DEV</div>
+        </div>
+
+        {/* Mode Switcher */}
+        <div className={styles.modeSwitcher}>
+          <button
+            id="mode-employee"
+            type="button"
+            className={`${styles.modeBtn} ${mode === 'employee' ? styles.modeBtnActive : ''}`}
+            onClick={() => switchMode('employee')}
+          >
+            <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
+              <circle cx="8" cy="5" r="3" stroke="currentColor" strokeWidth="1.4"/>
+              <path d="M2 14c0-3.314 2.686-5 6-5s6 1.686 6 5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+            </svg>
+            Работник
+          </button>
+          <button
+            id="mode-client"
+            type="button"
+            className={`${styles.modeBtn} ${mode === 'client' ? styles.modeBtnActive : ''}`}
+            onClick={() => switchMode('client')}
+          >
+            <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
+              <rect x="2" y="3" width="12" height="9" rx="1.5" stroke="currentColor" strokeWidth="1.4"/>
+              <path d="M5 7h6M5 9.5h4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+            </svg>
+            Клиент
+          </button>
         </div>
 
         <div className={styles.formHeader}>
-          <h2 className={styles.formTitle}>Вход в систему</h2>
+          <h2 className={styles.formTitle}>
+            {mode === 'employee' ? 'Вход для сотрудников' : 'Клиентский кабинет'}
+          </h2>
           <p className={styles.formSubtitle}>
-            Введите свои рабочие данные для входа.<br />
-            Доступ выдается администратором.
+            {mode === 'employee'
+              ? <>Введите рабочие данные для входа.<br />Доступ выдаётся администратором.</>
+              : <>Войдите, чтобы просматривать статус<br />вашего проекта.</>
+            }
           </p>
         </div>
 
@@ -100,7 +140,7 @@ export default function LoginPage() {
                 id="email"
                 type="email"
                 className={styles.input}
-                placeholder="you@kapusta.dev"
+                placeholder={mode === 'employee' ? 'you@kapusta.dev' : 'client@example.com'}
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 required
@@ -134,14 +174,14 @@ export default function LoginPage() {
           <button
             id="login-btn"
             type="submit"
-            className={styles.submitBtn}
+            className={`${styles.submitBtn} ${mode === 'client' ? styles.submitBtnClient : ''}`}
             disabled={loading}
           >
             {loading ? (
               <><div className={styles.spinner} /> Вхожу...</>
             ) : (
               <>
-                Войти
+                {mode === 'employee' ? 'Войти в систему' : 'Войти как клиент'}
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                   <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
@@ -151,7 +191,7 @@ export default function LoginPage() {
         </form>
 
         <div className={styles.footer}>
-          <span className={styles.footerText}>© 2025 Kapusta.dev</span>
+          <span className={styles.footerText}>© 2025 KAPUSTA.DEV</span>
           <div className={styles.footerBadge}>
             <span className={styles.secureDot} />
             Защищённое соединение
