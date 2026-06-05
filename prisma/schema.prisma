@@ -37,6 +37,7 @@ model User {
   comments        Comment[]
   pluginsUploaded Plugin[]
   messages        Message[]
+  chatMembers     ChatMember[]
 }
 
 model Project {
@@ -153,12 +154,37 @@ model ExchangeRateCache {
 
 // ─── ВНУТРЕННИЕ КОММУНИКАЦИИ ───────────────────────────────────
 
+model ChatGroup {
+  id        String       @id @default(cuid())
+  name      String?
+  isDirect  Boolean      @default(false)
+  createdAt DateTime     @default(now())
+  
+  members   ChatMember[]
+  messages  Message[]
+}
+
+model ChatMember {
+  id        String   @id @default(cuid())
+  joinedAt  DateTime @default(now())
+
+  groupId   String
+  group     ChatGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, userId])
+}
+
 model Message {
   id        String   @id @default(cuid())
-  content   String   @db.Text
+  content   String?  @db.Text
+  fileUrl   String?
+  fileType  String?
   createdAt DateTime @default(now())
 
-  // Relations
   authorId  String
-  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  author    User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  groupId   String
+  group     ChatGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
 }

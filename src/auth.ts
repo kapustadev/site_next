@@ -16,7 +16,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       name: "Credentials",
       credentials: {
         email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" }
+        password: { label: "Password", type: "password" },
+        mode: { label: "Mode", type: "text" }
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null
@@ -41,6 +42,17 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           )
 
           if (!passwordsMatch) return null
+
+          // Проверка роли:
+          // Если mode === 'client', пользователь должен быть CLIENT.
+          // Если mode === 'employee', пользователь НЕ должен быть CLIENT.
+          const mode = credentials.mode as string
+          if (mode === 'client' && user.role !== 'CLIENT') {
+            return null // Отклоняем, если работник пытается войти как клиент
+          }
+          if (mode === 'employee' && user.role === 'CLIENT') {
+            return null // Отклоняем, если клиент пытается войти как работник
+          }
 
           return {
             id: user.id,
