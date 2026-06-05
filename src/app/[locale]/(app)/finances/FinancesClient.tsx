@@ -45,9 +45,6 @@ export default function FinancesClient({
   const expense = transactions.filter(t => t.type === 'EXPENSE').reduce((sum, t) => sum + t.amountPln, 0)
   const profit = income - expense
 
-  function fmt(n: number) {
-    return Math.round(n).toLocaleString('ru-RU') + ' ₴' // Assuming PLN symbol or using Zł? The user used ₴ previously, but let's use PLN / zł
-  }
   function fmtPln(n: number) {
     return Math.round(n).toLocaleString('pl-PL') + ' PLN'
   }

@@ -29,10 +29,11 @@ export default async function ProjectsPage({
   return (
     <div className={shellStyles.content}>
       <ProjectsClient
-        projects={projects}
+        projects={projects as any}
         locale={locale}
-        canCreate={canCreate}
+        canCreate={role === 'OWNER' || role === 'PM'}
         colors={PROJECT_COLORS}
+        role={role}
       />
     </div>
   )

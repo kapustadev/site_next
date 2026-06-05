@@ -24,11 +24,13 @@ export default function ProjectsClient({
   locale,
   canCreate,
   colors,
+  role,
 }: {
   projects: Project[]
   locale: string
   canCreate: boolean
   colors: string[]
+  role: string
 }) {
   const [projects, setProjects] = useState(initialProjects)
   const [showModal, setShowModal] = useState(false)
@@ -148,7 +150,7 @@ export default function ProjectsClient({
                     <span className={styles.metaLabel}>💰 Бюджет</span>
                     <span className={styles.metaValue}>
                       {p.budget.toLocaleString('pl-PL')} {p.currency}
-                      {p.currency !== 'PLN' && p.budgetPln && (
+                      {p.currency !== 'PLN' && p.budgetPln && role !== 'CLIENT' && (
                         <span style={{ fontSize: '10px', color: 'var(--text-3)', marginLeft: '4px' }}>
                           (~{Math.round(p.budgetPln).toLocaleString('pl-PL')} PLN)
                         </span>
