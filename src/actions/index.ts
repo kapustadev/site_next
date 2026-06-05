@@ -31,6 +31,7 @@ export async function createProject(data: {
   name: string
   description?: string
   budget?: number
+  currency?: string
   deadline?: string
 }) {
   const session = await auth()
@@ -39,12 +40,48 @@ export async function createProject(data: {
   if (role !== 'OWNER' && role !== 'PM') throw new Error('Нет прав')
 
   const userId = (session.user as any).id
+  
+  let budgetPln: number | undefined = undefined
+  const currency = data.currency || 'PLN'
+
+  if (data.budget && currency !== 'PLN') {
+    const cached = await prisma.exchangeRateCache.findUnique({ where: { currency } })
+    const now = Date.now()
+    let rate = 1
+
+    if (cached && (now - new Date(cached.fetchedAt).getTime() < 3600000)) {
+      rate = cached.rateToPln
+    } else {
+      try {
+        const res = await fetch('https://api.nbp.pl/api/exchangerates/tables/A/?format=json')
+        if (res.ok) {
+          const json = await res.json()
+          const rateObj = json[0].rates.find((r: any) => r.code === currency)
+          if (rateObj) {
+            rate = rateObj.mid
+            await prisma.exchangeRateCache.upsert({
+              where: { currency },
+              create: { currency, rateToPln: rate, fetchedAt: new Date() },
+              update: { rateToPln: rate, fetchedAt: new Date() }
+            })
+          }
+        }
+      } catch (e) {
+        if (cached) rate = cached.rateToPln
+      }
+    }
+    budgetPln = data.budget * rate
+  } else if (data.budget && currency === 'PLN') {
+    budgetPln = data.budget
+  }
 
   const project = await prisma.project.create({
     data: {
       name: data.name,
       description: data.description,
       budget: data.budget ? Number(data.budget) : undefined,
+      currency: currency as any,
+      budgetPln,
       deadline: data.deadline ? new Date(data.deadline) : undefined,
       managerId: userId,
     }

@@ -30,7 +30,7 @@ const MOCK = {
 }
 
 function fmt(n: number) {
-  return n.toLocaleString('ru-RU') + ' ₴'
+  return n.toLocaleString('pl-PL') + ' PLN'
 }
 
 /* ── OWNER Dashboard ── */

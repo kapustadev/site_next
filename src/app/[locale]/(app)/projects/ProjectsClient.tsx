@@ -12,6 +12,8 @@ interface Project {
   name: string
   description: string | null
   budget: number | null
+  currency: string
+  budgetPln: number | null
   deadline: Date | null
   tasks: { id: string; status: string }[]
   manager: { name: string } | null
@@ -31,7 +33,7 @@ export default function ProjectsClient({
   const [projects, setProjects] = useState(initialProjects)
   const [showModal, setShowModal] = useState(false)
   const [isPending, startTransition] = useTransition()
-  const [form, setForm] = useState({ name: '', description: '', budget: '', deadline: '' })
+  const [form, setForm] = useState({ name: '', description: '', budget: '', currency: 'PLN', deadline: '' })
 
   function getProgress(tasks: { status: string }[]) {
     if (!tasks.length) return 0
@@ -56,10 +58,11 @@ export default function ProjectsClient({
         name: form.name,
         description: form.description || undefined,
         budget: form.budget ? Number(form.budget) : undefined,
+        currency: form.currency,
         deadline: form.deadline || undefined,
       })
       setProjects(prev => [{ ...p, tasks: [], manager: null } as any, ...prev])
-      setForm({ name: '', description: '', budget: '', deadline: '' })
+      setForm({ name: '', description: '', budget: '', currency: 'PLN', deadline: '' })
       setShowModal(false)
     })
   }
@@ -143,7 +146,14 @@ export default function ProjectsClient({
                 {p.budget && (
                   <div className={styles.metaRow}>
                     <span className={styles.metaLabel}>💰 Бюджет</span>
-                    <span className={styles.metaValue}>{p.budget.toLocaleString('ru-RU')} ₴</span>
+                    <span className={styles.metaValue}>
+                      {p.budget.toLocaleString('pl-PL')} {p.currency}
+                      {p.currency !== 'PLN' && p.budgetPln && (
+                        <span style={{ fontSize: '10px', color: 'var(--text-3)', marginLeft: '4px' }}>
+                          (~{Math.round(p.budgetPln).toLocaleString('pl-PL')} PLN)
+                        </span>
+                      )}
+                    </span>
                   </div>
                 )}
                 <div className={styles.metaRow}>
@@ -201,14 +211,27 @@ export default function ProjectsClient({
                 </div>
                 <div className={styles.formRow}>
                   <div className={styles.formField}>
-                    <label className={styles.formLabel}>Бюджет (₴)</label>
-                    <input
-                      className={styles.formInput}
-                      type="number"
-                      placeholder="50000"
-                      value={form.budget}
-                      onChange={e => setForm(f => ({ ...f, budget: e.target.value }))}
-                    />
+                    <label className={styles.formLabel}>Бюджет</label>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <input
+                        className={styles.formInput}
+                        type="number"
+                        placeholder="50000"
+                        value={form.budget}
+                        onChange={e => setForm(f => ({ ...f, budget: e.target.value }))}
+                        style={{ flex: 1 }}
+                      />
+                      <select
+                        className={styles.formInput}
+                        value={form.currency}
+                        onChange={e => setForm(f => ({ ...f, currency: e.target.value }))}
+                        style={{ width: '80px', appearance: 'auto', padding: '0 8px' }}
+                      >
+                        {['PLN', 'USD', 'EUR', 'UAH', 'GBP', 'CHF'].map(c => (
+                          <option key={c} value={c}>{c}</option>
+                        ))}
+                      </select>
+                    </div>
                   </div>
                   <div className={styles.formField}>
                     <label className={styles.formLabel}>Дедлайн</label>
