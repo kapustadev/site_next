@@ -33,11 +33,21 @@ export async function uploadPlugin(formData: FormData) {
   if (!file) throw new Error('Файл не выбран')
   if (!file.name.endsWith('.zip')) throw new Error('Разрешены только .zip архивы')
 
-  // Upload to Vercel Blob
-  // Required env var: BLOB_READ_WRITE_TOKEN
-  const blob = await put(`plugins/${Date.now()}-${file.name}`, file, {
-    access: 'public',
-  })
+  if (!process.env.BLOB_READ_WRITE_TOKEN) {
+    throw new Error('В переменные окружения не добавлен BLOB_READ_WRITE_TOKEN. Создайте хранилище Vercel Blob.')
+  }
+
+  let blobUrl = ''
+  try {
+    const blob = await put(`plugins/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`, file, {
+      access: 'public',
+      token: process.env.BLOB_READ_WRITE_TOKEN
+    })
+    blobUrl = blob.url
+  } catch (error: any) {
+    console.error('Blob upload error:', error)
+    throw new Error('Ошибка загрузки файла в Vercel Blob: ' + error.message)
+  }
 
   // Save to DB
   const plugin = await prisma.plugin.create({
@@ -45,7 +55,7 @@ export async function uploadPlugin(formData: FormData) {
       name,
       version,
       description,
-      fileUrl: blob.url,
+      fileUrl: blobUrl,
       uploaderId: userId,
     }
   })

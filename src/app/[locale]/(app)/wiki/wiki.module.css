@@ -1,0 +1,244 @@
+.wikiLayout {
+  display: flex;
+  height: calc(100vh - 80px);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.sidebar {
+  width: 280px;
+  min-width: 280px;
+  border-right: 1px solid var(--border);
+  background: var(--bg-2);
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebarHeader {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.title {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.addBtn {
+  background: var(--blue);
+  color: white;
+  border: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+.articleList {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.emptyText {
+  color: var(--text-3);
+  font-size: 13px;
+  text-align: center;
+  margin-top: 20px;
+}
+
+.articleItem {
+  padding: 12px 16px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.articleItem:hover {
+  background: rgba(255,255,255,0.05);
+}
+
+.articleItem.active {
+  background: rgba(1, 14, 208, 0.1);
+}
+
+.articleTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+
+.articleItem.active .articleTitle {
+  color: #818cf8;
+}
+
+.articleDate {
+  font-size: 11px;
+  color: var(--text-3);
+}
+
+.content {
+  flex: 1;
+  background: var(--bg);
+  overflow-y: auto;
+}
+
+.placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--text-3);
+}
+
+.placeholderIcon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.articleView {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 40px;
+}
+
+.articleHeader {
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 24px;
+  margin-bottom: 24px;
+}
+
+.h1 {
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--text);
+  margin-bottom: 12px;
+}
+
+.articleMeta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  color: var(--text-2);
+  font-size: 13px;
+}
+
+.deleteBtn {
+  background: none;
+  border: none;
+  color: var(--red);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.articleBody {
+  color: var(--text);
+  line-height: 1.6;
+  font-size: 15px;
+}
+
+.articleBody p {
+  margin-bottom: 16px;
+}
+
+/* Modal */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  width: 100%;
+  max-width: 600px;
+}
+
+.modalHeader {
+  padding: 24px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+}
+
+.closeBtn {
+  background: none;
+  border: none;
+  color: var(--text-2);
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.modalForm {
+  display: flex;
+  flex-direction: column;
+}
+
+.input {
+  background: var(--surface);
+  border: none;
+  border-bottom: 1px solid var(--border);
+  padding: 20px 24px;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text);
+  outline: none;
+}
+
+.textarea {
+  background: var(--bg);
+  border: none;
+  padding: 24px;
+  font-size: 15px;
+  color: var(--text);
+  font-family: inherit;
+  resize: vertical;
+  min-height: 200px;
+  outline: none;
+}
+
+.modalFooter {
+  padding: 24px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: flex-end;
+}
+
+.submitBtn {
+  background: var(--blue);
+  color: white;
+  border: none;
+  padding: 0 24px;
+  height: 40px;
+  border-radius: var(--radius);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.submitBtn:disabled {
+  opacity: 0.5;
+}
