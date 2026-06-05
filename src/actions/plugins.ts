@@ -11,30 +11,77 @@ async function checkAccess() {
   if (!session?.user) throw new Error('Не авторизован')
   const role = (session.user as any).role
   if (role === 'CLIENT') throw new Error('Нет прав для доступа к плагинам')
-  return (session.user as any).id
+  return { userId: (session.user as any).id, role }
+}
+
+export async function getPluginCategories() {
+  await checkAccess()
+  return prisma.pluginCategory.findMany({
+    orderBy: { name: 'asc' }
+  })
+}
+
+export async function createPluginCategory(name: string) {
+  const { role } = await checkAccess()
+  if (role !== 'OWNER' && role !== 'PM') throw new Error('Нет прав на создание категорий')
+  
+  if (!name.trim()) return { error: 'Название не может быть пустым' }
+  
+  try {
+    const category = await prisma.pluginCategory.create({
+      data: { name: name.trim() }
+    })
+    revalidatePath('/[locale]/plugins', 'page')
+    return category
+  } catch (err: any) {
+    return { error: 'Категория с таким именем уже существует' }
+  }
+}
+
+export async function deletePluginCategory(id: string) {
+  const { role } = await checkAccess()
+  if (role !== 'OWNER' && role !== 'PM') throw new Error('Нет прав')
+  
+  await prisma.pluginCategory.delete({ where: { id } })
+  revalidatePath('/[locale]/plugins', 'page')
 }
 
 export async function getPlugins() {
   await checkAccess()
   return prisma.plugin.findMany({
     orderBy: { createdAt: 'desc' },
-    include: { uploader: { select: { name: true } } }
+    include: { 
+      uploader: { select: { name: true } },
+      category: { select: { name: true } }
+    }
   })
 }
 
 export async function uploadPlugin(formData: FormData) {
-  const userId = await checkAccess()
+  let userId, role;
+  try {
+    const access = await checkAccess()
+    userId = access.userId
+    role = access.role
+  } catch (err: any) {
+    return { error: err.message }
+  }
+  
+  if (role !== 'OWNER' && role !== 'PM') {
+    return { error: 'У вас нет прав на загрузку плагинов. Только Владелец или PM.' }
+  }
   
   const name = formData.get('name') as string
   const version = formData.get('version') as string
   const description = formData.get('description') as string
+  const categoryId = formData.get('categoryId') as string
   const file = formData.get('file') as File
 
-  if (!file) throw new Error('Файл не выбран')
-  if (!file.name.endsWith('.zip')) throw new Error('Разрешены только .zip архивы')
+  if (!file) return { error: 'Файл не выбран' }
+  if (!file.name.endsWith('.zip')) return { error: 'Разрешены только .zip архивы' }
 
   if (!process.env.BLOB_READ_WRITE_TOKEN) {
-    throw new Error('В переменные окружения не добавлен BLOB_READ_WRITE_TOKEN. Создайте хранилище Vercel Blob.')
+    return { error: 'В переменные окружения не добавлен BLOB_READ_WRITE_TOKEN. Создайте хранилище Vercel Blob.' }
   }
 
   let blobUrl = ''
@@ -46,7 +93,7 @@ export async function uploadPlugin(formData: FormData) {
     blobUrl = blob.url
   } catch (error: any) {
     console.error('Blob upload error:', error)
-    throw new Error('Ошибка загрузки файла в Vercel Blob: ' + error.message)
+    return { error: 'Ошибка загрузки файла в Vercel Blob: ' + error.message }
   }
 
   // Save to DB
@@ -57,6 +104,7 @@ export async function uploadPlugin(formData: FormData) {
       description,
       fileUrl: blobUrl,
       uploaderId: userId,
+      categoryId: categoryId || null,
     }
   })
 

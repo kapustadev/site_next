@@ -89,6 +89,14 @@ model Comment {
   author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
 }
 
+model PluginCategory {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+
+  plugins   Plugin[]
+}
+
 model Plugin {
   id          String   @id @default(cuid())
   name        String
@@ -100,6 +108,8 @@ model Plugin {
   // Relations
   uploaderId  String
   uploader    User     @relation(fields: [uploaderId], references: [id])
+  categoryId  String?
+  category    PluginCategory? @relation(fields: [categoryId], references: [id])
 }
 
 // ─── ФИНАНСЫ ───────────────────────────────────────────────

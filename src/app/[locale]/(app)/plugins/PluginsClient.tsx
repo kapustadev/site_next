@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useTransition, useRef } from 'react'
+import { useState, useTransition } from 'react'
 import styles from './plugins.module.css'
-import { uploadPlugin, deletePlugin } from '@/actions/plugins'
+import { uploadPlugin, deletePlugin, createPluginCategory, deletePluginCategory } from '@/actions/plugins'
 
 type PluginItem = {
   id: string
@@ -12,24 +12,35 @@ type PluginItem = {
   fileUrl: string
   createdAt: Date
   uploader: { name: string } | null
+  category?: { name: string } | null
+}
+
+type CategoryItem = {
+  id: string
+  name: string
 }
 
 export default function PluginsClient({
   plugins: initialPlugins,
+  categories: initialCategories,
   role,
 }: {
   plugins: PluginItem[]
+  categories: CategoryItem[]
   role: string
 }) {
   const [plugins, setPlugins] = useState<PluginItem[]>(initialPlugins as any)
+  const [categories, setCategories] = useState<CategoryItem[]>(initialCategories)
   const [showModal, setShowModal] = useState(false)
   const [isPending, startTransition] = useTransition()
   
   const canUpload = role === 'OWNER' || role === 'PM'
 
-  const [form, setForm] = useState({ name: '', version: '', description: '' })
+  const [form, setForm] = useState({ name: '', version: '', description: '', categoryId: '' })
   const [file, setFile] = useState<File | null>(null)
   const [errorMsg, setErrorMsg] = useState('')
+  const [showNewCatInput, setShowNewCatInput] = useState(false)
+  const [newCatName, setNewCatName] = useState('')
 
   async function handleUpload(e: React.FormEvent) {
     e.preventDefault()
@@ -41,18 +52,51 @@ export default function PluginsClient({
     formData.append('name', form.name)
     formData.append('version', form.version)
     formData.append('description', form.description)
+    if (form.categoryId) formData.append('categoryId', form.categoryId)
     formData.append('file', file)
 
     startTransition(async () => {
       try {
-        const p = await uploadPlugin(formData)
-        setPlugins(prev => [{ ...p, uploader: { name: 'Вы' } } as any, ...prev])
+        const result = await uploadPlugin(formData)
+        if (result && 'error' in result) {
+          setErrorMsg(result.error as string)
+          return
+        }
+        
+        const p = result as any
+        const cat = categories.find(c => c.id === form.categoryId)
+        setPlugins(prev => [{ ...p, uploader: { name: 'Вы' }, category: cat ? { name: cat.name } : null } as any, ...prev])
         setShowModal(false)
-        setForm({ name: '', version: '', description: '' })
+        setForm({ name: '', version: '', description: '', categoryId: '' })
         setFile(null)
       } catch (err: any) {
         setErrorMsg(err.message || 'Ошибка загрузки')
       }
+    })
+  }
+
+  async function handleCreateCategory() {
+    if (!newCatName.trim()) return
+    startTransition(async () => {
+      const result = await createPluginCategory(newCatName)
+      if (result && 'error' in result) {
+        setErrorMsg(result.error as string)
+        return
+      }
+      setCategories(prev => [...prev, result as any].sort((a,b) => a.name.localeCompare(b.name)))
+      setForm(f => ({ ...f, categoryId: result.id }))
+      setShowNewCatInput(false)
+      setNewCatName('')
+      setErrorMsg('')
+    })
+  }
+
+  async function handleDeleteCategory(id: string, name: string) {
+    if (!confirm(`Удалить категорию "${name}"? Плагины не удалятся, но потеряют категорию.`)) return
+    startTransition(async () => {
+      await deletePluginCategory(id)
+      setCategories(prev => prev.filter(c => c.id !== id))
+      if (form.categoryId === id) setForm(f => ({ ...f, categoryId: '' }))
     })
   }
 
@@ -116,7 +160,14 @@ export default function PluginsClient({
               </div>
             </div>
 
-            <div className={styles.pluginName}>{p.name}</div>
+            <div className={styles.pluginName}>
+              {p.name}
+              {p.category && (
+                <span style={{ marginLeft: 8, fontSize: 11, background: 'var(--blue)', color: 'white', padding: '2px 8px', borderRadius: 99, verticalAlign: 'middle', fontWeight: 600 }}>
+                  {p.category.name}
+                </span>
+              )}
+            </div>
             <div>
               <span className={styles.pluginVersion}>v{p.version}</span>
             </div>
@@ -192,6 +243,55 @@ export default function PluginsClient({
                       )}
                     </div>
                   </div>
+                </div>
+
+                <div className={styles.formField}>
+                  <label className={styles.formLabel}>Категория</label>
+                  {!showNewCatInput ? (
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <select
+                        className={styles.formInput}
+                        style={{ flex: 1, appearance: 'auto' }}
+                        value={form.categoryId}
+                        onChange={e => setForm(f => ({ ...f, categoryId: e.target.value }))}
+                      >
+                        <option value="">Без категории</option>
+                        {categories.map(c => (
+                          <option key={c.id} value={c.id}>{c.name}</option>
+                        ))}
+                      </select>
+                      <button type="button" onClick={() => setShowNewCatInput(true)} className={styles.actionBtn} style={{ width: 'auto', padding: '0 12px', background: 'var(--bg)' }}>
+                        + Новая
+                      </button>
+                    </div>
+                  ) : (
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <input
+                        className={styles.formInput}
+                        style={{ flex: 1 }}
+                        placeholder="Название категории..."
+                        value={newCatName}
+                        onChange={e => setNewCatName(e.target.value)}
+                        autoFocus
+                      />
+                      <button type="button" onClick={handleCreateCategory} disabled={isPending || !newCatName.trim()} className={styles.btnSave} style={{ padding: '0 16px' }}>
+                        Сохранить
+                      </button>
+                      <button type="button" onClick={() => setShowNewCatInput(false)} className={styles.btnCancel} style={{ padding: '0 12px' }}>
+                        ✕
+                      </button>
+                    </div>
+                  )}
+                  {categories.length > 0 && canUpload && !showNewCatInput && (
+                    <div style={{ marginTop: 8, display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                      {categories.map(c => (
+                        <span key={c.id} style={{ fontSize: 11, background: 'var(--bg)', padding: '2px 8px', borderRadius: 99, display: 'flex', alignItems: 'center', gap: 4 }}>
+                          {c.name}
+                          <button type="button" onClick={() => handleDeleteCategory(c.id, c.name)} style={{ background: 'none', border: 'none', color: 'var(--red)', cursor: 'pointer', padding: 0 }}>✕</button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 <div className={styles.formField}>

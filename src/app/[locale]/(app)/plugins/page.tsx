@@ -1,6 +1,6 @@
 import { auth } from '@/auth'
 import { redirect } from 'next/navigation'
-import { getPlugins } from '@/actions/plugins'
+import { getPlugins, getPluginCategories } from '@/actions/plugins'
 import PluginsClient from './PluginsClient'
 import shellStyles from '@/components/layout/shell.module.css'
 
@@ -20,10 +20,11 @@ export default async function PluginsPage({
   }
 
   const plugins = await getPlugins()
+  const categories = await getPluginCategories()
 
   return (
     <div className={shellStyles.content}>
-      <PluginsClient plugins={plugins} role={role} />
+      <PluginsClient plugins={plugins} categories={categories} role={role} />
     </div>
   )
 }
