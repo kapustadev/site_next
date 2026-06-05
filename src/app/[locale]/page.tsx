@@ -9,7 +9,7 @@ type LoginMode = 'employee' | 'client'
 
 export default function LoginPage() {
   const router = useRouter()
-  const [mode, setMode] = useState<LoginMode>('employee')
+  const [mode, setMode] = useState<LoginMode>('client')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -79,18 +79,6 @@ export default function LoginPage() {
         {/* Mode Switcher */}
         <div className={styles.modeSwitcher}>
           <button
-            id="mode-employee"
-            type="button"
-            className={`${styles.modeBtn} ${mode === 'employee' ? styles.modeBtnActive : ''}`}
-            onClick={() => switchMode('employee')}
-          >
-            <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
-              <circle cx="8" cy="5" r="3" stroke="currentColor" strokeWidth="1.4"/>
-              <path d="M2 14c0-3.314 2.686-5 6-5s6 1.686 6 5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
-            </svg>
-            Работник
-          </button>
-          <button
             id="mode-client"
             type="button"
             className={`${styles.modeBtn} ${mode === 'client' ? styles.modeBtnActive : ''}`}
@@ -101,6 +89,18 @@ export default function LoginPage() {
               <path d="M5 7h6M5 9.5h4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
             </svg>
             Клиент
+          </button>
+          <button
+            id="mode-employee"
+            type="button"
+            className={`${styles.modeBtn} ${mode === 'employee' ? styles.modeBtnActive : ''}`}
+            onClick={() => switchMode('employee')}
+          >
+            <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
+              <circle cx="8" cy="5" r="3" stroke="currentColor" strokeWidth="1.4"/>
+              <path d="M2 14c0-3.314 2.686-5 6-5s6 1.686 6 5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+            </svg>
+            Работник
           </button>
         </div>
 
