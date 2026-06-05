@@ -2,13 +2,15 @@
 
 import { useState } from 'react'
 import { signIn } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useParams } from 'next/navigation'
 import styles from './login.module.css'
 
 type LoginMode = 'employee' | 'client'
 
 export default function LoginPage() {
   const router = useRouter()
+  const params = useParams()
+  const locale = params?.locale ?? 'ru'
   const [mode, setMode] = useState<LoginMode>('client')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -30,7 +32,7 @@ export default function LoginPage() {
       setError('Неверный email или пароль')
       setLoading(false)
     } else {
-      router.push('/dashboard')
+      router.push(`/${locale}/dashboard`)
     }
   }
 
