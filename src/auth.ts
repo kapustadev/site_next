@@ -1,18 +1,16 @@
 import NextAuth from "next-auth"
 import Credentials from "next-auth/providers/credentials"
-import { PrismaAdapter } from "@auth/prisma-adapter"
-import { PrismaClient } from "@prisma/client"
 import { Pool } from "pg"
 import { PrismaPg } from "@prisma/adapter-pg"
+import { PrismaClient } from "@prisma/client"
 import bcrypt from "bcryptjs"
 
-const pool = new Pool({ connectionString: process.env.DATABASE_URL })
-const adapter = new PrismaPg(pool)
-const prisma = new PrismaClient({ adapter })
-
 export const { handlers, signIn, signOut, auth } = NextAuth({
-  adapter: PrismaAdapter(prisma),
+  secret: process.env.NEXTAUTH_SECRET,
   session: { strategy: "jwt" },
+  pages: {
+    signIn: "/ru",
+  },
   providers: [
     Credentials({
       name: "Credentials",
@@ -23,35 +21,52 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null
 
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email as string }
-        })
+        const connectionString = process.env.DATABASE_URL_UNPOOLED ?? process.env.DATABASE_URL
+        if (!connectionString) return null
 
-        if (!user || !user.passwordHash) return null
+        const pool = new Pool({ connectionString })
+        const adapter = new PrismaPg(pool)
+        const prisma = new PrismaClient({ adapter })
 
-        const passwordsMatch = await bcrypt.compare(
-          credentials.password as string,
-          user.passwordHash
-        )
+        try {
+          const user = await prisma.user.findUnique({
+            where: { email: credentials.email as string }
+          })
 
-        if (passwordsMatch) {
-          return { id: user.id, name: user.name, email: user.email, role: user.role }
+          if (!user || !user.passwordHash) return null
+
+          const passwordsMatch = await bcrypt.compare(
+            credentials.password as string,
+            user.passwordHash
+          )
+
+          if (!passwordsMatch) return null
+
+          return {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            role: user.role
+          }
+        } finally {
+          await prisma.$disconnect()
+          await pool.end()
         }
-
-        return null
       }
     })
   ],
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
+        token.id = user.id
         token.role = (user as any).role
       }
       return token
     },
     async session({ session, token }) {
       if (session.user) {
-        (session.user as any).role = token.role
+        (session.user as any).id = token.id
+        ;(session.user as any).role = token.role
       }
       return session
     }
