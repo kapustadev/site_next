@@ -1,0 +1,406 @@
+/* ============================================================
+   KAPUSTA.DEV — Dashboard Widget Styles
+   ============================================================ */
+
+/* Page header */
+.pageHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 28px;
+  gap: 16px;
+}
+
+.pageTitle {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text);
+  letter-spacing: -0.03em;
+}
+
+.pageSub {
+  font-size: 13px;
+  color: var(--text-2);
+  margin-top: 2px;
+}
+
+/* ---- Stats row ---- */
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.statCard {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: border-color var(--duration) var(--ease);
+}
+
+.statCard:hover {
+  border-color: var(--border-hover);
+}
+
+.statTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.statLabel {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-2);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.statIcon {
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.statIconBlue { background: var(--blue-dim); color: #818cf8; }
+.statIconGreen { background: rgba(34,197,94,0.12); color: #22c55e; }
+.statIconYellow { background: rgba(245,158,11,0.12); color: #f59e0b; }
+.statIconRed { background: rgba(239,68,68,0.12); color: #ef4444; }
+.statIconPurple { background: rgba(168,85,247,0.12); color: #a78bfa; }
+
+.statValue {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--text);
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+
+.statDelta {
+  font-size: 12px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.statDeltaPos { color: var(--green); }
+.statDeltaNeg { color: var(--red); }
+
+/* ---- Two column grid ---- */
+.twoCol {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.threeCol {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+/* ---- Card ---- */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.cardTitle {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.01em;
+}
+
+.cardLink {
+  font-size: 12px;
+  color: var(--blue-light);
+  font-weight: 500;
+  text-decoration: none;
+  transition: opacity var(--duration);
+}
+
+.cardLink:hover { opacity: 0.7; }
+
+.cardBody {
+  padding: 16px 20px;
+}
+
+/* ---- Activity feed ---- */
+.activityList {
+  display: flex;
+  flex-direction: column;
+}
+
+.activityItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.activityItem:last-child {
+  border-bottom: none;
+}
+
+.activityAvatar {
+  width: 30px;
+  height: 30px;
+  min-width: 30px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, var(--blue), #7c3aed);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.activityText {
+  flex: 1;
+}
+
+.activityMain {
+  font-size: 13px;
+  color: var(--text);
+  line-height: 1.4;
+}
+
+.activityMain strong { font-weight: 600; }
+
+.activityTime {
+  font-size: 11px;
+  color: var(--text-3);
+  margin-top: 2px;
+}
+
+/* ---- Project list ---- */
+.projectItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: background var(--duration);
+}
+
+.projectItem:last-child { border-bottom: none; }
+
+.projectColor {
+  width: 3px;
+  min-width: 3px;
+  height: 36px;
+  border-radius: 99px;
+}
+
+.projectInfo { flex: 1; min-width: 0; }
+
+.projectName {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.projectMeta {
+  font-size: 11px;
+  color: var(--text-3);
+  margin-top: 2px;
+}
+
+.projectProgress {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.progressBar {
+  width: 64px;
+  height: 4px;
+  background: var(--surface-2);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  border-radius: 99px;
+  background: var(--blue);
+  transition: width 0.5s var(--ease);
+}
+
+.progressText {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-2);
+}
+
+/* ---- Task item ---- */
+.taskItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.taskItem:last-child { border-bottom: none; }
+
+.taskCheck {
+  width: 16px;
+  height: 16px;
+  min-width: 16px;
+  border: 1.5px solid var(--border-hover);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.taskTitle {
+  flex: 1;
+  font-size: 13px;
+  color: var(--text);
+  line-height: 1.4;
+  min-width: 0;
+}
+
+.taskProject {
+  font-size: 11px;
+  color: var(--text-3);
+  white-space: nowrap;
+}
+
+/* ---- Empty state ---- */
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  color: var(--text-3);
+  gap: 8px;
+}
+
+.emptyIcon {
+  font-size: 32px;
+  margin-bottom: 4px;
+}
+
+.emptyText {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-2);
+}
+
+.emptyHint {
+  font-size: 12px;
+  color: var(--text-3);
+}
+
+/* ---- Chart placeholder ---- */
+.chartPlaceholder {
+  height: 180px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 0;
+  padding: 0 4px;
+}
+
+.chartBars {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  height: 140px;
+}
+
+.chartBar {
+  flex: 1;
+  border-radius: 6px 6px 0 0;
+  background: var(--blue-dim);
+  transition: background var(--duration);
+  position: relative;
+  min-height: 8px;
+}
+
+.chartBar:hover { background: rgba(1,14,208,0.3); }
+
+.chartBarIncome {
+  background: rgba(1,14,208,0.25);
+}
+
+.chartBarExpense {
+  background: rgba(239,68,68,0.2);
+  border-radius: 6px 6px 0 0;
+}
+
+.chartLabels {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.chartLabel {
+  flex: 1;
+  text-align: center;
+  font-size: 10px;
+  color: var(--text-3);
+}
+
+.chartLegend {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-2);
+}
+
+.legendDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+}
+
+@media (max-width: 768px) {
+  .twoCol, .threeCol {
+    grid-template-columns: 1fr;
+  }
+  .statsGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
