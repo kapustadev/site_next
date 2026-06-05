@@ -12,7 +12,7 @@ const geist = Geist({
 });
 
 export const metadata: Metadata = {
-  title: "Kapusta.dev Studio",
+  title: "KAPUSTA.DEV Studio",
   description: "Внутренняя платформа управления веб-студией",
 };
 
