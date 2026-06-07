@@ -6,7 +6,7 @@
 /* ===================== GLOBAL SHELL BG ===================== */
 .shell {
   display: flex;
-  height: 100vh;
+  height: 100dvh;
   width: 100vw;
   overflow: hidden;
   background: var(--bg);
@@ -41,7 +41,7 @@
 /* ===================== SIDEBAR ===================== */
 .sidebarWrapper {
   display: flex;
-  height: 100vh;
+  height: 100dvh;
   z-index: 50;
   position: relative;
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -50,7 +50,7 @@
 .sidebar {
   width: 244px;
   min-width: 244px;
-  height: 100vh;
+  height: 100dvh;
   background: rgba(15, 17, 21, 0.85);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);

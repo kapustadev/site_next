@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { usePathname } from 'next/navigation'
 import Sidebar from '@/components/layout/Sidebar'
+import Link from 'next/link'
 import styles from '@/components/layout/shell.module.css'
 
 export default function ClientShell({
@@ -45,7 +46,7 @@ export default function ClientShell({
               <path d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </button>
-          <div className={styles.mobileTopbarTitle}>KAPUSTA.DEV</div>
+          <Link href={`/${locale}/dashboard`} className={styles.mobileTopbarTitle} style={{ textDecoration: 'none' }}>KAPUSTA.DEV</Link>
         </div>
 
         {children}

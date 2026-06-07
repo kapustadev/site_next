@@ -209,3 +209,10 @@ select option {
   0% { background-position: -200% center; }
   100% { background-position: 200% center; }
 }
+
+/* ---------- Mobile iOS Safari Zoom Fix ---------- */
+@media screen and (max-width: 768px) {
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+}

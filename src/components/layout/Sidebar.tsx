@@ -107,13 +107,13 @@ export default function Sidebar({
   return (
     <aside className={styles.sidebar}>
       {/* Logo */}
-      <div className={styles.sidebarLogo}>
+      <Link href={`/${locale}/dashboard`} className={styles.sidebarLogo} style={{ textDecoration: 'none' }}>
         <div className={styles.sidebarLogoMark}>K</div>
         <div>
           <div className={styles.sidebarLogoText}>KAPUSTA.DEV</div>
           <div className={styles.sidebarLogoSub}>Studio Platform</div>
         </div>
-      </div>
+      </Link>
 
       {/* Navigation */}
       <nav style={{ flex: 1, overflow: 'hidden auto', display: 'flex', flexDirection: 'column', gap: 0 }}>
