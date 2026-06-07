@@ -23,10 +23,22 @@ export async function updateProfile(formData: FormData) {
     throw new Error('Пароль должен содержать минимум 6 символов')
   }
 
+  const avatar = formData.get('avatar') as File | null
+
+  if (avatar && avatar.size > 0) {
+    const { put } = await import('@vercel/blob')
+    const blob = await put(`avatars/${userId}_${Date.now()}_${avatar.name}`, avatar, {
+      access: 'public',
+      token: process.env.BLOB_READ_WRITE_TOKEN
+    })
+    updateData.avatarUrl = blob.url
+  }
+
   await prisma.user.update({
     where: { id: userId },
     data: updateData
   })
 
   revalidatePath('/[locale]/settings', 'page')
+  revalidatePath('/[locale]', 'layout')
 }

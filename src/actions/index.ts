@@ -147,6 +147,79 @@ export async function deleteProject(id: string) {
   revalidatePath('/[locale]/projects', 'page')
 }
 
+export async function updateProject(id: string, data: {
+  name: string
+  description?: string
+  budget?: number
+  currency?: string
+  deadline?: string
+  managerId?: string
+  teamMemberIds?: string[]
+  clientId?: string
+}) {
+  const session = await auth()
+  if (!session?.user) throw new Error('Не авторизован')
+  const role = (session.user as any).role
+  if (role !== 'OWNER' && role !== 'PM') throw new Error('Нет прав')
+
+  const currency = data.currency || 'PLN'
+  let budgetPln: number | undefined = undefined
+
+  if (data.budget && currency !== 'PLN') {
+    const cached = await prisma.exchangeRateCache.findUnique({ where: { currency } })
+    const now = Date.now()
+    let rate = 1
+
+    if (cached && (now - new Date(cached.fetchedAt).getTime() < 3600000)) {
+      rate = cached.rateToPln
+    } else {
+      try {
+        const res = await fetch('https://api.nbp.pl/api/exchangerates/tables/A/?format=json')
+        if (res.ok) {
+          const json = await res.json()
+          const rateObj = json[0].rates.find((r: any) => r.code === currency)
+          if (rateObj) {
+            rate = rateObj.mid
+          }
+        }
+      } catch (e) {}
+    }
+    budgetPln = data.budget * rate
+  } else if (data.budget && currency === 'PLN') {
+    budgetPln = data.budget
+  }
+
+  // Handle members
+  const memberIds = Array.from(new Set([
+    ...(data.managerId ? [data.managerId] : []),
+    ...(data.clientId ? [data.clientId] : []),
+    ...(data.teamMemberIds || []),
+  ]))
+
+  const project = await prisma.project.update({
+    where: { id },
+    data: {
+      name: data.name,
+      description: data.description,
+      budget: data.budget ? Number(data.budget) : undefined,
+      currency: currency as any,
+      budgetPln,
+      dueDate: data.deadline ? new Date(data.deadline) : undefined,
+      managerId: data.managerId || undefined,
+      clientId: data.clientId || undefined,
+      members: {
+        deleteMany: {},
+        create: memberIds.map(userId => ({ userId }))
+      }
+    },
+    include: { manager: true, tasks: true, members: { include: { user: { select: { id: true, name: true, role: true } } } }, client: true, columns: true }
+  })
+
+  revalidatePath('/[locale]/projects', 'page')
+  revalidatePath(`/[locale]/projects/${id}`, 'page')
+  return project
+}
+
 // ─── TASKS ────────────────────────────────────────────────────
 
 export async function getTasksByProject(projectId: string) {
@@ -255,27 +328,37 @@ export async function updateUserRole(userId: string, role: string) {
   revalidatePath('/[locale]/admin/users', 'page')
 }
 
-export async function updateUser(userId: string, data: {
-  name: string
-  email: string
-  role: string
-  password?: string
-}) {
+export async function updateUser(userId: string, formData: FormData) {
   const session = await auth()
   if (!session?.user) throw new Error('Не авторизован')
   if ((session.user as any).role !== 'OWNER') throw new Error('Нет прав')
 
+  const name = formData.get('name') as string
+  const email = formData.get('email') as string
+  const role = formData.get('role') as string
+  const password = formData.get('password') as string
+
   const updateData: any = {
-    name: data.name,
-    email: data.email,
-    role: data.role as any,
+    name,
+    email,
+    role: role as any,
   }
 
-  if (data.password && data.password.length >= 6) {
+  if (password && password.length >= 6) {
     const bcrypt = await import('bcryptjs')
-    updateData.passwordHash = await bcrypt.hash(data.password, 12)
-  } else if (data.password && data.password.length > 0) {
+    updateData.passwordHash = await bcrypt.hash(password, 12)
+  } else if (password && password.length > 0) {
     throw new Error('Пароль должен содержать минимум 6 символов')
+  }
+
+  const avatar = formData.get('avatar') as File | null
+  if (avatar && avatar.size > 0) {
+    const { put } = await import('@vercel/blob')
+    const blob = await put(`avatars/${userId}_${Date.now()}_${avatar.name}`, avatar, {
+      access: 'public',
+      token: process.env.BLOB_READ_WRITE_TOKEN
+    })
+    updateData.avatarUrl = blob.url
   }
 
   const user = await prisma.user.update({
@@ -294,4 +377,34 @@ export async function deleteUser(userId: string) {
 
   await prisma.user.delete({ where: { id: userId } })
   revalidatePath('/[locale]/admin/users', 'page')
+}
+
+export async function updateUserAvatar(userId: string, formData: FormData) {
+  const session = await auth()
+  if (!session?.user) throw new Error('Не авторизован')
+  const currentUserId = (session.user as any).id
+  const role = (session.user as any).role
+
+  if (userId !== currentUserId && role !== 'OWNER') {
+    throw new Error('Нет прав')
+  }
+
+  const file = formData.get('file') as File
+  if (!file || file.size === 0) throw new Error('Файл не выбран')
+
+  const { put } = await import('@vercel/blob')
+  const blob = await put(`avatars/${userId}_${Date.now()}_${file.name}`, file, {
+    access: 'public',
+    token: process.env.BLOB_READ_WRITE_TOKEN
+  })
+
+  await prisma.user.update({
+    where: { id: userId },
+    data: { avatarUrl: blob.url }
+  })
+
+  revalidatePath('/[locale]/admin/users', 'page')
+  revalidatePath('/[locale]/settings', 'page')
+  revalidatePath('/[locale]', 'layout')
+  return blob.url
 }

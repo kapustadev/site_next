@@ -12,6 +12,7 @@ interface User {
   email: string
   role: Role
   createdAt: Date
+  avatarUrl?: string | null
 }
 
 const ROLE_LABELS: Record<Role, string> = {
@@ -312,18 +313,16 @@ export default function UsersClient({
     })
   }
 
-  async function handleEdit(e: React.FormEvent) {
+  async function handleEdit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     if (!editTarget) return
     setFormError('')
+    const formData = new FormData(e.currentTarget)
+    formData.append('role', editForm.role)
+    
     startTransition(async () => {
       try {
-        await updateUser(editTarget.id, {
-          name: editForm.name,
-          email: editForm.email,
-          role: editForm.role,
-          password: editForm.newPassword || undefined,
-        })
+        await updateUser(editTarget.id, formData)
         setUsers(prev => prev.map(u =>
           u.id === editTarget.id
             ? { ...u, name: editForm.name, email: editForm.email, role: editForm.role }
@@ -453,8 +452,12 @@ export default function UsersClient({
               <tr key={user.id}>
                 <td>
                   <div className={styles.userCell}>
-                    <div className={styles.avatar} style={{ background: avatarColor(user.id) }}>
-                      {initials(user.name)}
+                    <div className={styles.avatar} style={{ background: user.avatarUrl ? 'transparent' : avatarColor(user.id) }}>
+                      {user.avatarUrl ? (
+                        <img src={user.avatarUrl} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                      ) : (
+                        initials(user.name)
+                      )}
                     </div>
                     <div>
                       <div className={styles.userName}>
@@ -626,6 +629,7 @@ export default function UsersClient({
                     <div className={styles.formField}>
                       <label className={styles.formLabel}>Имя *</label>
                       <input
+                        name="name"
                         autoFocus
                         className={styles.formInput}
                         placeholder="Иван Иванов"
@@ -637,6 +641,7 @@ export default function UsersClient({
                     <div className={styles.formField}>
                       <label className={styles.formLabel}>Email *</label>
                       <input
+                        name="email"
                         className={styles.formInput}
                         type="email"
                         placeholder="ivan@kapusta.dev"
@@ -651,8 +656,18 @@ export default function UsersClient({
                     <RoleSelector value={editForm.role} onChange={r => setEditForm(f => ({ ...f, role: r }))} />
                   </div>
                   <div className={styles.formField}>
+                    <label className={styles.formLabel}>Аватарка (jpg, png)</label>
+                    <input
+                      name="avatar"
+                      className={styles.formInput}
+                      type="file"
+                      accept="image/*"
+                    />
+                  </div>
+                  <div className={styles.formField}>
                     <label className={styles.formLabel}>Новый пароль <span style={{ color: 'var(--text-3)', fontWeight: 400, textTransform: 'none', fontSize: 10 }}>(оставьте пустым, чтобы не менять)</span></label>
                     <input
+                      name="password"
                       className={styles.formInput}
                       type="password"
                       placeholder="Минимум 6 символов"

@@ -25,6 +25,7 @@ model User {
   name          String
   email         String    @unique
   passwordHash  String?
+  avatarUrl     String?
   role          Role      @default(EMPLOYEE)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
@@ -40,6 +41,7 @@ model User {
   chatMembers      ChatMember[]
   wikiArticles     WikiArticle[]
   invoices         Invoice[]      @relation("InvoiceClient")
+  serviceSubscriptions ServiceSubscription[] @relation("ClientSubscriptions")
 }
 
 model Project {
@@ -67,6 +69,7 @@ model Project {
   transactions Transaction[]
   invoices    Invoice[]
   chatGroups  ChatGroup[]
+  serviceSubscriptions ServiceSubscription[]
 }
 
 model ProjectMember {
@@ -155,6 +158,37 @@ model PluginVersion {
   plugin      Plugin   @relation(fields: [pluginId], references: [id], onDelete: Cascade)
   uploaderId  String
   uploader    User     @relation(fields: [uploaderId], references: [id])
+}
+
+// ─── УСЛУГИ (ХОСТИНГ И ДОМЕНЫ) ─────────────────────────────
+
+enum ServiceType {
+  HOSTING
+  DOMAIN
+  OTHER
+}
+
+enum BillingCycle {
+  MONTHLY
+  YEARLY
+}
+
+model ServiceSubscription {
+  id          String       @id @default(cuid())
+  name        String
+  type        ServiceType
+  price       Float
+  currency    Currency     @default(PLN)
+  billingCycle BillingCycle @default(YEARLY)
+  nextDueDate DateTime
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  // Relations
+  clientId    String
+  client      User         @relation("ClientSubscriptions", fields: [clientId], references: [id], onDelete: Cascade)
+  projectId   String?
+  project     Project?     @relation(fields: [projectId], references: [id], onDelete: SetNull)
 }
 
 // ─── ФИНАНСЫ ───────────────────────────────────────────────

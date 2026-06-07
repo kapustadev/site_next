@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import Link from 'next/link'
-import { createProject, deleteProject } from '@/actions'
+import { createProject, deleteProject, updateProject } from '@/actions'
 import styles from './projects.module.css'
 
 const PROJECT_COLORS = ['#010ED0', '#7c3aed', '#22c55e', '#f59e0b', '#ef4444', '#06b6d4']
@@ -17,6 +17,9 @@ interface Project {
   deadline: Date | null
   tasks: { id: string; status: string }[]
   manager: { name: string } | null
+  managerId: string | null
+  clientId: string | null
+  members: { userId: string }[]
 }
 
 export default function ProjectsClient({
@@ -38,6 +41,7 @@ export default function ProjectsClient({
 }) {
   const [projects, setProjects] = useState(initialProjects)
   const [showModal, setShowModal] = useState(false)
+  const [editProjectId, setEditProjectId] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
   const [form, setForm] = useState({
     name: '',
@@ -69,11 +73,11 @@ export default function ProjectsClient({
     return new Date(d).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })
   }
 
-  async function handleCreate(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!form.name.trim()) return
     startTransition(async () => {
-      const p = await createProject({
+      const data = {
         name: form.name,
         description: form.description || undefined,
         budget: form.budget ? Number(form.budget) : undefined,
@@ -82,11 +86,35 @@ export default function ProjectsClient({
         managerId: form.managerId,
         clientId: form.clientId || undefined,
         teamMemberIds: form.teamMemberIds,
-      })
-      setProjects(prev => [{ ...p, tasks: [], manager: users.find(u => u.id === (form.managerId || currentUserId)) } as any, ...prev])
+      }
+
+      if (editProjectId) {
+        const p = await updateProject(editProjectId, data)
+        setProjects(prev => prev.map(proj => proj.id === editProjectId ? { ...p, tasks: proj.tasks, manager: users.find(u => u.id === (form.managerId || currentUserId)) } as any : proj))
+      } else {
+        const p = await createProject(data)
+        setProjects(prev => [{ ...p, tasks: [], manager: users.find(u => u.id === (form.managerId || currentUserId)) } as any, ...prev])
+      }
+      
       setForm({ name: '', description: '', budget: '', currency: 'PLN', deadline: '', managerId: currentUserId, clientId: '', teamMemberIds: [] })
       setShowModal(false)
+      setEditProjectId(null)
     })
+  }
+
+  function handleEdit(p: any) {
+    setForm({
+      name: p.name,
+      description: p.description || '',
+      budget: p.budget ? String(p.budget) : '',
+      currency: p.currency || 'PLN',
+      deadline: p.deadline ? new Date(p.deadline).toISOString().split('T')[0] : '',
+      managerId: p.managerId || currentUserId,
+      clientId: p.clientId || '',
+      teamMemberIds: p.members?.map((m: any) => m.userId) || []
+    })
+    setEditProjectId(p.id)
+    setShowModal(true)
   }
 
   async function handleDelete(id: string) {
@@ -105,7 +133,7 @@ export default function ProjectsClient({
           <div className={styles.subtitle}>{projects.length} активных проектов</div>
         </div>
         {canCreate && (
-          <button className={styles.addBtn} onClick={() => setShowModal(true)}>
+          <button className={styles.addBtn} onClick={() => { setEditProjectId(null); setForm({ name: '', description: '', budget: '', currency: 'PLN', deadline: '', managerId: currentUserId, clientId: '', teamMemberIds: [] }); setShowModal(true) }}>
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
               <path d="M7 1v12M1 7h12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
             </svg>
@@ -142,15 +170,26 @@ export default function ProjectsClient({
                   )}
                 </div>
                 {canCreate && (
-                  <button
-                    className={styles.projectCardMenu}
-                    onClick={e => { e.preventDefault(); handleDelete(p.id) }}
-                    title="Удалить"
-                  >
-                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                      <path d="M2 3.5h10M5.5 3.5V2h3v1.5M6 6v4M8 6v4M3 3.5l.5 7.5h7l.5-7.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                  </button>
+                  <div style={{ display: 'flex', gap: '4px' }}>
+                    <button
+                      className={styles.projectCardMenu}
+                      onClick={e => { e.preventDefault(); handleEdit(p) }}
+                      title="Редактировать"
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
+                      </svg>
+                    </button>
+                    <button
+                      className={styles.projectCardMenu}
+                      onClick={e => { e.preventDefault(); handleDelete(p.id) }}
+                      title="Удалить"
+                    >
+                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                        <path d="M2 3.5h10M5.5 3.5V2h3v1.5M6 6v4M8 6v4M3 3.5l.5 7.5h7l.5-7.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    </button>
+                  </div>
                 )}
               </div>
 
@@ -210,7 +249,7 @@ export default function ProjectsClient({
                 </svg>
               </button>
             </div>
-            <form onSubmit={handleCreate}>
+            <form onSubmit={handleSubmit}>
               <div className={styles.modalBody}>
                 <div className={styles.formField}>
                   <label className={styles.formLabel}>Название *</label>
@@ -321,7 +360,7 @@ export default function ProjectsClient({
                   Отмена
                 </button>
                 <button type="submit" className={styles.btnSave} disabled={isPending || !form.name.trim()}>
-                  {isPending ? 'Создаю...' : 'Создать проект'}
+                  {isPending ? 'Сохранение...' : editProjectId ? 'Сохранить изменения' : 'Создать проект'}
                 </button>
               </div>
             </form>

@@ -32,6 +32,7 @@ function getNavItems(locale: string, role: Role): { section?: string; items: Nav
           { href: `${base}/dashboard`, label: 'Мой проект', icon: <IconProject /> },
           { href: `${base}/chat`, label: 'Сообщения', icon: <IconChat /> },
           { href: `${base}/billing`, label: 'Оплата', icon: <IconFinance /> },
+          { href: `${base}/services`, label: 'Услуги', icon: <IconService /> },
           { href: `${base}/settings`, label: 'Настройки', icon: <IconSettings /> },
         ]
       }
@@ -66,6 +67,7 @@ function getNavItems(locale: string, role: Role): { section?: string; items: Nav
       section: 'Управление',
       items: [
         { href: `${base}/finances`, label: 'Финансы', icon: <IconFinance /> },
+        { href: `${base}/services`, label: 'Услуги', icon: <IconService /> },
         { href: `${base}/admin/users`, label: 'Команда', icon: <IconTeam /> },
         { href: `${base}/settings`, label: 'Настройки', icon: <IconSettings /> },
       ]
@@ -93,7 +95,7 @@ export default function Sidebar({
   user,
   locale,
 }: {
-  user: { name?: string | null; email?: string | null; role: Role }
+  user: { name?: string | null; email?: string | null; role: Role; avatarUrl?: string | null }
   locale: string
 }) {
   const pathname = usePathname()
@@ -141,7 +143,11 @@ export default function Sidebar({
       {/* User section */}
       <div className={styles.sidebarBottom}>
         <div className={styles.sidebarUser}>
-          <div className={styles.sidebarAvatar}>{initials}</div>
+          <div className={styles.sidebarAvatar}>
+            {user.avatarUrl ? (
+              <img src={user.avatarUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
+            ) : initials}
+          </div>
           <div className={styles.sidebarUserInfo}>
             <div className={styles.sidebarUserName}>{user.name ?? user.email}</div>
             <div className={`${styles.roleBadge} ${roleStyles[user.role]}`}>
@@ -191,4 +197,7 @@ function IconSettings() {
 }
 function IconLogout() {
   return <svg width="15" height="15" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 2H3a1 1 0 00-1 1v10a1 1 0 001 1h3M10 11l3-3-3-3M13 8H6" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/></svg>
+}
+function IconService() {
+  return <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 11h12M4 11v2M12 11v2" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/><rect x="2" y="3" width="12" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.4"/><circle cx="5" cy="7" r="1" fill="currentColor"/><circle cx="8" cy="7" r="1" fill="currentColor"/></svg>
 }

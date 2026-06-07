@@ -33,7 +33,11 @@ export default function SettingsClient({ user }: { user: any }) {
       <div className={styles.settingsCard}>
         <div className={styles.header}>
           <div className={styles.avatar}>
-            {user.name ? user.name[0].toUpperCase() : '?'}
+            {user.avatarUrl ? (
+              <img src={user.avatarUrl} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
+            ) : (
+              user.name ? user.name[0].toUpperCase() : '?'
+            )}
           </div>
           <div>
             <div className={styles.name}>{user.name}</div>
@@ -55,6 +59,16 @@ export default function SettingsClient({ user }: { user: any }) {
               defaultValue={user.name} 
               className={styles.input} 
               required 
+            />
+          </div>
+
+          <div className={styles.field}>
+            <label className={styles.label}>Новая аватарка (jpg, png)</label>
+            <input 
+              type="file"
+              name="avatar" 
+              accept="image/*"
+              className={styles.input} 
             />
           </div>
 

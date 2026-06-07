@@ -1,5 +1,6 @@
 import { auth } from '@/auth'
 import { redirect } from 'next/navigation'
+import { prisma } from '@/lib/prisma'
 import ClientShell from '@/components/layout/ClientShell'
 
 export default async function DashboardLayout({
@@ -16,10 +17,21 @@ export default async function DashboardLayout({
     redirect(`/${locale}`)
   }
 
+  const userId = (session.user as any).id
+  const dbUser = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { name: true, email: true, role: true, avatarUrl: true }
+  })
+
+  if (!dbUser) {
+    redirect(`/${locale}`)
+  }
+
   const user = {
-    name: session.user.name ?? null,
-    email: session.user.email ?? null,
-    role: (session.user as any).role ?? 'EMPLOYEE',
+    name: dbUser.name ?? null,
+    email: dbUser.email ?? null,
+    role: dbUser.role ?? 'EMPLOYEE',
+    avatarUrl: dbUser.avatarUrl ?? null,
   }
 
   return (
