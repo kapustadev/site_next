@@ -3,18 +3,10 @@
 import { useState, useTransition } from 'react'
 import Link from 'next/link'
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd'
-import { createTask, updateTaskStatus, deleteTask } from '@/actions'
+import { createTask } from '@/actions'
+import { updateTaskColumn, createKanbanColumn, updateKanbanColumn, deleteKanbanColumn, sendProjectStatusMessage } from '@/actions/kanban'
 import { addComment, deleteComment } from '@/actions/communications'
 import styles from '../projects.module.css'
-
-const COLUMNS = [
-  { id: 'BACKLOG',     label: 'Backlog',      color: '#64748b' },
-  { id: 'TODO',        label: 'To Do',        color: '#3b82f6' },
-  { id: 'IN_PROGRESS', label: 'В работе',     color: '#f59e0b' },
-  { id: 'REVIEW',      label: 'Ревью',        color: '#8b5cf6' },
-  { id: 'TESTING',     label: 'Тестирование', color: '#06b6d4' },
-  { id: 'DONE',        label: 'Готово',       color: '#22c55e' },
-]
 
 interface Comment {
   id: string
@@ -28,10 +20,18 @@ interface Task {
   id: string
   title: string
   description: string | null
-  status: string
+  columnId: string | null
   dueDate: Date | null
   assignee: { id: string; name: string } | null
   comments: Comment[]
+}
+
+interface KanbanColumn {
+  id: string
+  name: string
+  color: string
+  order: number
+  notifyClient: boolean
 }
 
 interface Project {
@@ -39,6 +39,7 @@ interface Project {
   name: string
   description: string | null
   tasks: Task[]
+  columns: KanbanColumn[]
 }
 
 interface User {
@@ -54,6 +55,7 @@ export default function KanbanBoard({
   canEdit,
   isReadOnly,
   currentUserId,
+  role,
 }: {
   project: Project
   locale: string
@@ -61,12 +63,24 @@ export default function KanbanBoard({
   canEdit: boolean
   isReadOnly: boolean
   currentUserId: string
+  role: string
 }) {
   const [tasks, setTasks] = useState<Task[]>(project.tasks)
-  const [addingCol, setAddingCol] = useState<string | null>(null)
+  const [columns, setColumns] = useState<KanbanColumn[]>(project.columns)
+  
+  const [addingCol, setAddingCol] = useState<string | null>(null) // task to column
   const [newTaskTitle, setNewTaskTitle] = useState('')
-  const [showAddModal, setShowAddModal] = useState<string | null>(null)
+  const [showAddModal, setShowAddModal] = useState<string | null>(null) // task add modal
   const [modalForm, setModalForm] = useState({ title: '', description: '', assigneeId: '', dueDate: '' })
+  
+  // Column Management
+  const [showColModal, setShowColModal] = useState<KanbanColumn | 'new' | null>(null)
+  const [colForm, setColForm] = useState({ name: '', color: '#3b82f6', notifyClient: false })
+
+  // Notification Popup
+  const [showNotifyModal, setShowNotifyModal] = useState<{ taskId: string, destColId: string } | null>(null)
+  const [notifyMsg, setNotifyMsg] = useState('')
+
   const [isPending, startTransition] = useTransition()
   
   // Task Details Modal
@@ -74,7 +88,7 @@ export default function KanbanBoard({
   const [commentText, setCommentText] = useState('')
 
   function getColumnTasks(colId: string) {
-    return tasks.filter(t => t.status === colId)
+    return tasks.filter(t => t.columnId === colId)
   }
 
   function formatDue(d: Date | null) {
@@ -95,37 +109,65 @@ export default function KanbanBoard({
 
   function onDragEnd(result: DropResult) {
     if (!result.destination || isReadOnly) return
-    const { draggableId, destination } = result
-    const newStatus = destination.droppableId
+    const { draggableId, destination, source } = result
+    
+    const newStatusId = destination.droppableId
+    const oldStatusId = source.droppableId
 
-    setTasks(prev =>
-      prev.map(t => t.id === draggableId ? { ...t, status: newStatus } : t)
-    )
+    if (newStatusId === oldStatusId) return
+
+    const destCol = columns.find(c => c.id === newStatusId)
+    
+    if (destCol?.notifyClient) {
+      // Show notification modal
+      const taskTitle = tasks.find(t => t.id === draggableId)?.title || 'задачу'
+      setNotifyMsg(`Добрый день! Мы взяли задачу «${taskTitle}» в работу.`)
+      setShowNotifyModal({ taskId: draggableId, destColId: newStatusId })
+    } else {
+      // Just move without notification
+      setTasks(prev => prev.map(t => t.id === draggableId ? { ...t, columnId: newStatusId } : t))
+      startTransition(async () => {
+        await updateTaskColumn(draggableId, newStatusId)
+      })
+    }
+  }
+
+  async function handleNotifyConfirm() {
+    if (!showNotifyModal) return
+    const { taskId, destColId } = showNotifyModal
+
+    setTasks(prev => prev.map(t => t.id === taskId ? { ...t, columnId: destColId } : t))
+    setShowNotifyModal(null)
 
     startTransition(async () => {
-      await updateTaskStatus(draggableId, newStatus)
+      await updateTaskColumn(taskId, destColId)
+      if (notifyMsg.trim()) {
+        await sendProjectStatusMessage(project.id, notifyMsg.trim())
+      }
+      setNotifyMsg('')
     })
   }
 
-  async function handleQuickAdd(colId: string) {
-    if (!newTaskTitle.trim()) { setAddingCol(null); return }
+  function handleNotifySkip() {
+    if (!showNotifyModal) return
+    const { taskId, destColId } = showNotifyModal
+    setTasks(prev => prev.map(t => t.id === taskId ? { ...t, columnId: destColId } : t))
+    setShowNotifyModal(null)
     startTransition(async () => {
-      const task = await createTask({ title: newTaskTitle, projectId: project.id, status: colId })
-      setTasks(prev => [...prev, { ...task, assignee: null, comments: [] } as any])
-      setNewTaskTitle('')
-      setAddingCol(null)
+      await updateTaskColumn(taskId, destColId)
     })
   }
 
   async function handleModalAdd(e: React.FormEvent) {
     e.preventDefault()
     if (!modalForm.title.trim()) return
+    const firstCol = columns[0]?.id
     startTransition(async () => {
       const task = await createTask({
         title: modalForm.title,
         description: modalForm.description || undefined,
         projectId: project.id,
-        status: showAddModal ?? 'TODO',
+        columnId: showAddModal ?? firstCol,
         assigneeId: modalForm.assigneeId || undefined,
         dueDate: modalForm.dueDate || undefined,
       })
@@ -136,19 +178,44 @@ export default function KanbanBoard({
     })
   }
 
-  async function handleDeleteTask(taskId: string) {
-    if (!confirm('Удалить задачу?')) return
+  // Column management
+  async function handleSaveColumn(e: React.FormEvent) {
+    e.preventDefault()
+    if (!colForm.name.trim()) return
+
     startTransition(async () => {
-      await deleteTask(taskId, project.id)
-      setTasks(prev => prev.filter(t => t.id !== taskId))
-      if (selectedTask?.id === taskId) setSelectedTask(null)
+      if (showColModal === 'new') {
+        const newCol = await createKanbanColumn(project.id, {
+          name: colForm.name,
+          color: colForm.color,
+          notifyClient: colForm.notifyClient
+        })
+        setColumns(prev => [...prev, newCol as any])
+      } else if (typeof showColModal === 'object' && showColModal !== null) {
+        const updated = await updateKanbanColumn(showColModal.id, project.id, {
+          name: colForm.name,
+          color: colForm.color,
+          notifyClient: colForm.notifyClient
+        })
+        setColumns(prev => prev.map(c => c.id === showColModal.id ? updated as any : c))
+      }
+      setShowColModal(null)
+      setColForm({ name: '', color: '#3b82f6', notifyClient: false })
+    })
+  }
+
+  async function handleDeleteColumn(colId: string) {
+    if (!confirm('Вы уверены? Задачи из этой колонки останутся без статуса.')) return
+    startTransition(async () => {
+      await deleteKanbanColumn(colId, project.id)
+      setColumns(prev => prev.filter(c => c.id !== colId))
+      setTasks(prev => prev.map(t => t.columnId === colId ? { ...t, columnId: null } : t))
     })
   }
 
   async function handleAddComment(e: React.FormEvent) {
     e.preventDefault()
     if (!commentText.trim() || !selectedTask) return
-    
     startTransition(async () => {
       const comment = await addComment(selectedTask.id, commentText)
       const updatedTasks = tasks.map(t => {
@@ -182,48 +249,57 @@ export default function KanbanBoard({
 
   return (
     <div className={styles.boardPage}>
-      {/* Header */}
       <div className={styles.boardHeader}>
         <Link href={`/${locale}/projects`} className={styles.backBtn}>
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-            <path d="M9 2L4 7l5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 2L4 7l5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
           Проекты
         </Link>
         <div className={styles.boardTitle}>{project.name}</div>
-        {canEdit && (
-          <div className={styles.boardActions}>
+        <div className={styles.boardActions}>
+          {role === 'OWNER' && (
             <button
               className={styles.addBtn}
-              onClick={() => setShowAddModal('TODO')}
+              onClick={() => { setColForm({ name: '', color: '#3b82f6', notifyClient: false }); setShowColModal('new') }}
+              style={{ fontSize: '12px', height: '34px', padding: '0 14px', background: 'transparent', border: '1px solid rgba(255,255,255,0.1)' }}
+            >
+              + Колонка
+            </button>
+          )}
+          {canEdit && (
+            <button
+              className={styles.addBtn}
+              onClick={() => setShowAddModal(columns[0]?.id)}
               style={{ fontSize: '12px', height: '34px', padding: '0 14px' }}
             >
-              <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
-                <path d="M6.5 1v11M1 6.5h11" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
-              </svg>
               Добавить задачу
             </button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
-      {/* Kanban Board */}
       <DragDropContext onDragEnd={onDragEnd}>
         <div className={styles.board}>
-          {COLUMNS.map(col => {
+          {columns.map(col => {
             const colTasks = getColumnTasks(col.id)
             return (
               <div key={col.id} className={styles.column}>
-                {/* Column Header */}
                 <div className={styles.columnHeader}>
                   <div className={styles.columnTitleWrap}>
                     <div className={styles.columnDot} style={{ background: col.color }} />
-                    <span className={styles.columnTitle}>{col.label}</span>
+                    <span className={styles.columnTitle}>{col.name}</span>
                     <span className={styles.columnCount}>{colTasks.length}</span>
                   </div>
+                  {role === 'OWNER' && (
+                    <button
+                      onClick={() => { setColForm({ name: col.name, color: col.color, notifyClient: col.notifyClient }); setShowColModal(col) }}
+                      style={{ background: 'none', border: 'none', color: 'var(--text-3)', cursor: 'pointer', padding: '4px' }}
+                      title="Редактировать колонку"
+                    >
+                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 2a1 1 0 100-2 1 1 0 000 2zm0 6a1 1 0 100-2 1 1 0 000 2zm0 6a1 1 0 100-2 1 1 0 000 2z" fill="currentColor"/></svg>
+                    </button>
+                  )}
                 </div>
 
-                {/* Droppable Column */}
                 <Droppable droppableId={col.id} isDropDisabled={isReadOnly}>
                   {(provided, snapshot) => (
                     <div
@@ -231,21 +307,14 @@ export default function KanbanBoard({
                       {...provided.droppableProps}
                       className={styles.columnBody}
                       style={{
-                        background: snapshot.isDraggingOver
-                          ? `${col.color}10`
-                          : undefined,
+                        background: snapshot.isDraggingOver ? `${col.color}10` : undefined,
                         transition: 'background 0.15s ease',
                       }}
                     >
                       {colTasks.map((task, index) => {
                         const due = formatDue(task.dueDate)
                         return (
-                          <Draggable
-                            key={task.id}
-                            draggableId={task.id}
-                            index={index}
-                            isDragDisabled={isReadOnly || !canEdit}
-                          >
+                          <Draggable key={task.id} draggableId={task.id} index={index} isDragDisabled={isReadOnly || !canEdit}>
                             {(provided, snapshot) => (
                               <div
                                 ref={provided.innerRef}
@@ -259,38 +328,25 @@ export default function KanbanBoard({
                                 <div className={styles.taskCardFooter}>
                                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                                     {task.assignee && (
-                                      <div
-                                        className={styles.taskAssignee}
-                                        title={task.assignee.name}
-                                      >
+                                      <div className={styles.taskAssignee} title={task.assignee.name}>
                                         {getInitials(task.assignee.name)}
                                       </div>
                                     )}
                                     {task.comments?.length > 0 && (
-                                      <div style={{ fontSize: '10px', color: 'var(--text-3)', display: 'flex', alignItems: 'center', gap: '3px' }}>
-                                        💬 {task.comments.length}
-                                      </div>
+                                      <div style={{ fontSize: '10px', color: 'var(--text-3)' }}>💬 {task.comments.length}</div>
                                     )}
                                   </div>
-                                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                    {due && (
-                                      <div className={`${styles.taskDue} ${due.urgent ? styles.taskDueUrgent : ''}`}>
-                                        <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-                                          <circle cx="5" cy="5" r="4" stroke="currentColor" strokeWidth="1.1"/>
-                                          <path d="M5 3v2.5L6.5 7" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round"/>
-                                        </svg>
-                                        {due.text}
-                                      </div>
-                                    )}
-                                  </div>
+                                  {due && (
+                                    <div className={`${styles.taskDue} ${due.urgent ? styles.taskDueUrgent : ''}`}>
+                                      {due.text}
+                                    </div>
+                                  )}
                                 </div>
                               </div>
                             )}
                           </Draggable>
                         )
                       })}
-                      {provided.placeholder}
-
                       {provided.placeholder}
                     </div>
                   )}
@@ -301,128 +357,141 @@ export default function KanbanBoard({
         </div>
       </DragDropContext>
 
-      {/* Full Task Create Modal */}
+      {/* Task Create Modal */}
       {showAddModal && (
         <div className={styles.modalOverlay} onClick={() => setShowAddModal(null)}>
           <div className={styles.modal} onClick={e => e.stopPropagation()}>
             <div className={styles.modalHeader}>
               <span className={styles.modalTitle}>Новая задача</span>
-              <button className={styles.modalClose} onClick={() => setShowAddModal(null)}>
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path d="M3 3l10 10M13 3L3 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-                </svg>
-              </button>
+              <button className={styles.modalClose} onClick={() => setShowAddModal(null)}>✕</button>
             </div>
             <form onSubmit={handleModalAdd}>
               <div className={styles.modalBody}>
                 <div className={styles.formField}>
                   <label className={styles.formLabel}>Название *</label>
-                  <input
-                    autoFocus
-                    className={styles.formInput}
-                    placeholder="Что нужно сделать?"
-                    value={modalForm.title}
-                    onChange={e => setModalForm(f => ({ ...f, title: e.target.value }))}
-                    required
-                  />
+                  <input autoFocus className={styles.formInput} value={modalForm.title} onChange={e => setModalForm(f => ({ ...f, title: e.target.value }))} required />
                 </div>
                 <div className={styles.formField}>
                   <label className={styles.formLabel}>Описание</label>
-                  <textarea
-                    className={`${styles.formInput} ${styles.formTextarea}`}
-                    placeholder="Детали задачи..."
-                    value={modalForm.description}
-                    onChange={e => setModalForm(f => ({ ...f, description: e.target.value }))}
-                  />
+                  <textarea className={`${styles.formInput} ${styles.formTextarea}`} value={modalForm.description} onChange={e => setModalForm(f => ({ ...f, description: e.target.value }))} />
                 </div>
                 <div className={styles.formRow}>
-                  {users.length > 0 && (
-                    <div className={styles.formField}>
-                      <label className={styles.formLabel}>Исполнитель</label>
-                      <select
-                        className={styles.formInput}
-                        value={modalForm.assigneeId}
-                        onChange={e => setModalForm(f => ({ ...f, assigneeId: e.target.value }))}
-                        style={{ appearance: 'auto' }}
-                      >
-                        <option value="">— Не назначен —</option>
-                        {users.map(u => (
-                          <option key={u.id} value={u.id}>{u.name}</option>
-                        ))}
-                      </select>
-                    </div>
-                  )}
+                  <div className={styles.formField}>
+                    <label className={styles.formLabel}>Исполнитель</label>
+                    <select className={styles.formInput} value={modalForm.assigneeId} onChange={e => setModalForm(f => ({ ...f, assigneeId: e.target.value }))} style={{ appearance: 'auto' }}>
+                      <option value="">— Не назначен —</option>
+                      {users.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
+                    </select>
+                  </div>
                   <div className={styles.formField}>
                     <label className={styles.formLabel}>Дедлайн</label>
-                    <input
-                      className={styles.formInput}
-                      type="date"
-                      value={modalForm.dueDate}
-                      onChange={e => setModalForm(f => ({ ...f, dueDate: e.target.value }))}
-                    />
+                    <input className={styles.formInput} type="date" value={modalForm.dueDate} onChange={e => setModalForm(f => ({ ...f, dueDate: e.target.value }))} />
                   </div>
                 </div>
                 <div className={styles.formField}>
                   <label className={styles.formLabel}>Колонка</label>
-                  <select
-                    className={styles.formInput}
-                    value={showAddModal}
-                    onChange={e => setShowAddModal(e.target.value)}
-                    style={{ appearance: 'auto' }}
-                  >
-                    {COLUMNS.map(c => (
-                      <option key={c.id} value={c.id}>{c.label}</option>
-                    ))}
+                  <select className={styles.formInput} value={showAddModal} onChange={e => setShowAddModal(e.target.value)} style={{ appearance: 'auto' }}>
+                    {columns.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                   </select>
                 </div>
               </div>
               <div className={styles.modalFooter}>
-                <button type="button" className={styles.btnCancel} onClick={() => setShowAddModal(null)}>
-                  Отмена
-                </button>
-                <button type="submit" className={styles.btnSave} disabled={isPending || !modalForm.title.trim()}>
-                  {isPending ? 'Создаю...' : 'Создать задачу'}
-                </button>
+                <button type="button" className={styles.btnCancel} onClick={() => setShowAddModal(null)}>Отмена</button>
+                <button type="submit" className={styles.btnSave} disabled={isPending || !modalForm.title.trim()}>Создать</button>
               </div>
             </form>
           </div>
         </div>
       )}
 
-      {/* Task Details Modal (with Comments) */}
+      {/* Column Manage Modal */}
+      {showColModal && (
+        <div className={styles.modalOverlay} onClick={() => setShowColModal(null)}>
+          <div className={styles.modal} onClick={e => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <span className={styles.modalTitle}>{showColModal === 'new' ? 'Новая колонка' : 'Редактирование колонки'}</span>
+              <button className={styles.modalClose} onClick={() => setShowColModal(null)}>✕</button>
+            </div>
+            <form onSubmit={handleSaveColumn}>
+              <div className={styles.modalBody}>
+                <div className={styles.formField}>
+                  <label className={styles.formLabel}>Название *</label>
+                  <input autoFocus className={styles.formInput} value={colForm.name} onChange={e => setColForm(f => ({ ...f, name: e.target.value }))} required />
+                </div>
+                <div className={styles.formField}>
+                  <label className={styles.formLabel}>Цвет (HEX)</label>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <input type="color" value={colForm.color} onChange={e => setColForm(f => ({ ...f, color: e.target.value }))} style={{ width: '40px', height: '40px', padding: '0', border: 'none', background: 'none', cursor: 'pointer' }} />
+                    <input className={styles.formInput} value={colForm.color} onChange={e => setColForm(f => ({ ...f, color: e.target.value }))} style={{ flex: 1 }} />
+                  </div>
+                </div>
+                <div className={styles.formField} style={{ flexDirection: 'row', alignItems: 'center', gap: '10px', marginTop: '10px' }}>
+                  <input type="checkbox" id="notifyClient" checked={colForm.notifyClient} onChange={e => setColForm(f => ({ ...f, notifyClient: e.target.checked }))} style={{ width: '16px', height: '16px' }} />
+                  <label htmlFor="notifyClient" style={{ fontSize: '14px', color: 'var(--text)', cursor: 'pointer' }}>Уведомлять клиента в чат при переносе сюда</label>
+                </div>
+              </div>
+              <div className={styles.modalFooter} style={{ justifyContent: 'space-between' }}>
+                {showColModal !== 'new' ? (
+                  <button type="button" className={styles.btnCancel} style={{ color: 'var(--red)', borderColor: 'rgba(239,68,68,0.2)' }} onClick={() => handleDeleteColumn((showColModal as KanbanColumn).id)}>Удалить</button>
+                ) : <div/>}
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <button type="button" className={styles.btnCancel} onClick={() => setShowColModal(null)}>Отмена</button>
+                  <button type="submit" className={styles.btnSave} disabled={isPending || !colForm.name.trim()}>Сохранить</button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Notify Popup Modal */}
+      {showNotifyModal && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modal} style={{ maxWidth: '400px' }}>
+            <div className={styles.modalHeader}>
+              <span className={styles.modalTitle}>Уведомление клиенту</span>
+            </div>
+            <div className={styles.modalBody}>
+              <p style={{ fontSize: '13px', color: 'var(--text-2)' }}>Вы переместили задачу в колонку, для которой включены уведомления. Отправить сообщение в проектный чат?</p>
+              <textarea
+                className={`${styles.formInput} ${styles.formTextarea}`}
+                value={notifyMsg}
+                onChange={e => setNotifyMsg(e.target.value)}
+                placeholder="Сообщение..."
+              />
+            </div>
+            <div className={styles.modalFooter}>
+              <button type="button" className={styles.btnCancel} onClick={handleNotifySkip}>Пропустить</button>
+              <button type="button" className={styles.btnSave} onClick={handleNotifyConfirm} disabled={isPending || !notifyMsg.trim()}>
+                {isPending ? 'Отправка...' : 'Отправить в чат'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Task Details Modal (Comments) */}
       {selectedTask && (
         <div className={styles.modalOverlay} onClick={() => setSelectedTask(null)}>
           <div className={styles.modal} onClick={e => e.stopPropagation()} style={{ maxWidth: '640px' }}>
             <div className={styles.modalHeader}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <span className={styles.modalTitle}>{selectedTask.title}</span>
-                <span className={styles.columnCount} style={{ background: COLUMNS.find(c => c.id === selectedTask.status)?.color + '20', color: COLUMNS.find(c => c.id === selectedTask.status)?.color }}>
-                  {COLUMNS.find(c => c.id === selectedTask.status)?.label}
-                </span>
-              </div>
-              <div style={{ display: 'flex', gap: '8px' }}>
-                {canEdit && (
-                  <button className={styles.modalClose} onClick={() => handleDeleteTask(selectedTask.id)} title="Удалить задачу" style={{ color: 'var(--red)' }}>
-                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 3h12M4 3V2h6v1M3 3l.5 8.5h7L11 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                  </button>
+                {selectedTask.columnId && (
+                  <span className={styles.columnCount} style={{ background: columns.find(c => c.id === selectedTask.columnId)?.color + '20', color: columns.find(c => c.id === selectedTask.columnId)?.color }}>
+                    {columns.find(c => c.id === selectedTask.columnId)?.name}
+                  </span>
                 )}
-                <button className={styles.modalClose} onClick={() => setSelectedTask(null)}>
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                    <path d="M3 3l10 10M13 3L3 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-                  </svg>
-                </button>
               </div>
+              <button className={styles.modalClose} onClick={() => setSelectedTask(null)}>✕</button>
             </div>
             
             <div className={styles.modalBody} style={{ gap: '24px' }}>
-              {/* Info Section */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 {selectedTask.description && (
                   <div>
                     <div className={styles.formLabel} style={{ marginBottom: '6px' }}>Описание</div>
-                    <div style={{ fontSize: '13px', color: 'var(--text)', lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>
-                      {selectedTask.description}
-                    </div>
+                    <div style={{ fontSize: '13px', color: 'var(--text)', lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>{selectedTask.description}</div>
                   </div>
                 )}
                 <div style={{ display: 'flex', gap: '24px' }}>
@@ -438,18 +507,14 @@ export default function KanbanBoard({
                   {selectedTask.dueDate && (
                     <div>
                       <div className={styles.formLabel} style={{ marginBottom: '6px' }}>Дедлайн</div>
-                      <div style={{ fontSize: '13px', color: 'var(--text)' }}>
-                        {new Date(selectedTask.dueDate).toLocaleDateString('ru-RU')}
-                      </div>
+                      <div style={{ fontSize: '13px', color: 'var(--text)' }}>{new Date(selectedTask.dueDate).toLocaleDateString('ru-RU')}</div>
                     </div>
                   )}
                 </div>
               </div>
 
-              {/* Comments Section */}
               <div style={{ borderTop: '1px solid var(--border)', paddingTop: '24px' }}>
                 <div className={styles.formLabel} style={{ marginBottom: '16px' }}>Комментарии</div>
-                
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '20px', maxHeight: '300px', overflowY: 'auto' }}>
                   {selectedTask.comments.length === 0 ? (
                     <div style={{ fontSize: '12px', color: 'var(--text-3)' }}>Нет комментариев</div>
@@ -465,27 +530,15 @@ export default function KanbanBoard({
                               <button onClick={() => handleDelComment(c.id)} style={{ background: 'none', border: 'none', color: 'var(--red)', fontSize: '10px', cursor: 'pointer', padding: 0 }}>удалить</button>
                             )}
                           </div>
-                          <div style={{ fontSize: '13px', color: 'var(--text)', lineHeight: 1.4, whiteSpace: 'pre-wrap' }}>
-                            {c.content}
-                          </div>
+                          <div style={{ fontSize: '13px', color: 'var(--text)', lineHeight: 1.4, whiteSpace: 'pre-wrap' }}>{c.content}</div>
                         </div>
                       </div>
                     ))
                   )}
                 </div>
-
-                {/* Add Comment Form */}
                 <form onSubmit={handleAddComment} style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
-                  <textarea
-                    className={styles.formInput}
-                    placeholder="Написать комментарий..."
-                    value={commentText}
-                    onChange={e => setCommentText(e.target.value)}
-                    style={{ minHeight: '40px', resize: 'vertical' }}
-                  />
-                  <button type="submit" className={styles.btnSave} disabled={isPending || !commentText.trim()} style={{ height: 'auto', padding: '10px 16px' }}>
-                    {isPending ? '...' : 'Отправить'}
-                  </button>
+                  <textarea className={styles.formInput} placeholder="Написать комментарий..." value={commentText} onChange={e => setCommentText(e.target.value)} style={{ minHeight: '40px', resize: 'vertical' }} />
+                  <button type="submit" className={styles.btnSave} disabled={isPending || !commentText.trim()} style={{ height: 'auto', padding: '10px 16px' }}>Отправить</button>
                 </form>
               </div>
             </div>

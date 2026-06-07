@@ -20,6 +20,7 @@ export default async function ProjectPage({
     where: { id },
     include: {
       manager: true,
+      columns: { orderBy: { order: 'asc' } },
       tasks: {
         include: { 
           assignee: true,
@@ -51,6 +52,7 @@ export default async function ProjectPage({
         canEdit={canEdit}
         isReadOnly={isReadOnly}
         currentUserId={(session.user as any).id}
+        role={role}
       />
     </div>
   )

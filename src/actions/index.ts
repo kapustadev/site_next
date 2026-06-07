@@ -92,15 +92,46 @@ export async function createProject(data: {
       budget: data.budget ? Number(data.budget) : undefined,
       currency: currency as any,
       budgetPln,
-      deadline: data.deadline ? new Date(data.deadline) : undefined,
+      dueDate: data.deadline ? new Date(data.deadline) : undefined,
       managerId: data.managerId || userId,
       clientId: data.clientId || undefined,
       members: {
         create: memberIds.map(id => ({ userId: id }))
+      },
+      columns: {
+        create: [
+          { name: 'Backlog', color: '#64748b', order: 0 },
+          { name: 'To Do', color: '#3b82f6', order: 1 },
+          { name: 'В работе', color: '#f59e0b', order: 2, notifyClient: true },
+          { name: 'Ревью', color: '#8b5cf6', order: 3 },
+          { name: 'Тестирование', color: '#06b6d4', order: 4 },
+          { name: 'Готово', color: '#22c55e', order: 5, notifyClient: true },
+        ]
       }
     },
-    include: { manager: true, tasks: true, members: { include: { user: { select: { id: true, name: true, role: true } } } }, client: true }
+    include: { manager: true, tasks: true, members: { include: { user: { select: { id: true, name: true, role: true } } } }, client: true, columns: true }
   })
+
+  // Automatically create a ChatGroup if there's a client
+  if (data.clientId) {
+    const chatMemberIds = Array.from(new Set([
+      userId,
+      ...(data.managerId ? [data.managerId] : []),
+      data.clientId,
+      ...(data.teamMemberIds || []),
+    ]))
+    
+    await prisma.chatGroup.create({
+      data: {
+        name: `Проект: ${project.name}`,
+        projectId: project.id,
+        isDirect: false,
+        members: {
+          create: chatMemberIds.map(id => ({ userId: id }))
+        }
+      }
+    })
+  }
 
   revalidatePath('/[locale]/projects', 'page')
   return project
@@ -132,7 +163,7 @@ export async function createTask(data: {
   projectId: string
   assigneeId?: string
   dueDate?: string
-  status?: string
+  columnId?: string
 }) {
   const session = await auth()
   if (!session?.user) throw new Error('Не авторизован')
@@ -146,7 +177,7 @@ export async function createTask(data: {
       projectId: data.projectId,
       assigneeId: data.assigneeId || undefined,
       dueDate: data.dueDate ? new Date(data.dueDate) : undefined,
-      status: (data.status as any) ?? 'TODO',
+      columnId: data.columnId || null,
     }
   })
 
@@ -154,7 +185,7 @@ export async function createTask(data: {
   return task
 }
 
-export async function updateTaskStatus(taskId: string, status: string) {
+export async function updateTaskColumn(taskId: string, columnId: string) {
   const session = await auth()
   if (!session?.user) throw new Error('Не авторизован')
   const role = (session.user as any).role
@@ -162,7 +193,7 @@ export async function updateTaskStatus(taskId: string, status: string) {
 
   const task = await prisma.task.update({
     where: { id: taskId },
-    data: { status: status as any }
+    data: { columnId }
   })
 
   revalidatePath(`/[locale]/projects/${task.projectId}`, 'page')

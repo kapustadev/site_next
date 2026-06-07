@@ -13,15 +13,6 @@ enum Role {
   CLIENT
 }
 
-enum TaskStatus {
-  BACKLOG
-  TODO
-  IN_PROGRESS
-  REVIEW
-  TESTING
-  DONE
-}
-
 enum InvoiceStatus {
   PENDING
   PAID
@@ -58,7 +49,8 @@ model Project {
   budget      Float?
   currency    Currency @default(PLN)
   budgetPln   Float?
-  deadline    DateTime?
+  dueDate     DateTime?
+  status      String   @default("active")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -71,8 +63,10 @@ model Project {
 
   members     ProjectMember[]
   tasks       Task[]
+  columns     KanbanColumn[]
   transactions Transaction[]
   invoices    Invoice[]
+  chatGroups  ChatGroup[]
 }
 
 model ProjectMember {
@@ -87,11 +81,23 @@ model ProjectMember {
   @@unique([projectId, userId])
 }
 
+model KanbanColumn {
+  id           String   @id @default(cuid())
+  name         String
+  color        String   @default("#3b82f6")
+  order        Int      @default(0)
+  notifyClient Boolean  @default(false)
+  createdAt    DateTime @default(now())
+
+  projectId    String
+  project      Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  tasks        Task[]
+}
+
 model Task {
   id          String     @id @default(cuid())
   title       String
   description String?    @db.Text
-  status      TaskStatus @default(TODO)
   dueDate     DateTime?
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
@@ -99,6 +105,8 @@ model Task {
   // Relations
   projectId   String
   project     Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  columnId    String?
+  column      KanbanColumn? @relation(fields: [columnId], references: [id], onDelete: SetNull)
   assigneeId  String?
   assignee    User?      @relation("TaskAssignee", fields: [assigneeId], references: [id])
   comments    Comment[]
@@ -152,8 +160,8 @@ model PluginVersion {
 // ─── ФИНАНСЫ ───────────────────────────────────────────────
 
 enum TransactionType {
-  INCOME   // Доход (оплата от клиента)
-  EXPENSE  // Расход (зарплата, сервисы, покупки)
+  INCOME
+  EXPENSE
 }
 
 enum Currency {
@@ -169,17 +177,11 @@ enum Currency {
 
 model Transaction {
   id          String          @id @default(cuid())
-  type        TransactionType
-  description String
-  category    String?
-
   amount      Float
-  currency    Currency        @default(PLN)
-  amountPln   Float
-  exchangeRate Float          @default(1)
-
+  type        TransactionType
+  category    String
+  description String?
   date        DateTime        @default(now())
-  createdAt   DateTime        @default(now())
 
   projectId   String?
   project     Project?        @relation(fields: [projectId], references: [id], onDelete: SetNull)
@@ -195,52 +197,51 @@ model ExchangeRateCache {
 // ─── ФАКТУРЫ (БИЛЛИНГ) ─────────────────────────────────────
 
 model Invoice {
-  id          String        @id @default(cuid())
-  number      String        // "INV-001"
-  description String?       @db.Text
+  id          String   @id @default(cuid())
   amount      Float
-  currency    Currency      @default(PLN)
   status      InvoiceStatus @default(PENDING)
-  issuedAt    DateTime      @default(now())
+  description String?
   dueDate     DateTime?
-  paidAt      DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now()) @updatedAt
 
   projectId   String
-  project     Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
-
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
   clientId    String
-  client      User          @relation("InvoiceClient", fields: [clientId], references: [id], onDelete: Cascade)
+  client      User     @relation("InvoiceClient", fields: [clientId], references: [id], onDelete: Cascade)
 }
 
-// ─── ВНУТРЕННИЕ КОММУНИКАЦИИ ───────────────────────────────────
+// ─── КОММУНИКАЦИИ ──────────────────────────────────────────
 
 model ChatGroup {
-  id        String       @id @default(cuid())
-  name      String?
-  isDirect  Boolean      @default(false)
-  createdAt DateTime     @default(now())
+  id          String   @id @default(cuid())
+  name        String
+  isDirect    Boolean  @default(false)
+  createdAt   DateTime @default(now())
 
-  members   ChatMember[]
-  messages  Message[]
+  projectId   String?
+  project     Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+
+  members     ChatMember[]
+  messages    Message[]
 }
 
 model ChatMember {
-  id        String   @id @default(cuid())
-  joinedAt  DateTime @default(now())
+  id         String   @id @default(cuid())
+  joinedAt   DateTime @default(now())
+  lastReadAt DateTime?
 
-  groupId   String
-  group     ChatGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
   userId    String
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  groupId   String
+  group     ChatGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
 
-  @@unique([groupId, userId])
+  @@unique([userId, groupId])
 }
 
 model Message {
   id        String   @id @default(cuid())
-  content   String?  @db.Text
-  fileUrl   String?
-  fileType  String?
+  content   String   @db.Text
   createdAt DateTime @default(now())
 
   authorId  String
@@ -249,7 +250,7 @@ model Message {
   group     ChatGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
 }
 
-// ─── БАЗА ЗНАНИЙ (WIKI) ────────────────────────────────────────
+// ─── БАЗА ЗНАНИЙ (WIKI) ────────────────────────────────────
 
 model WikiArticle {
   id        String   @id @default(cuid())
