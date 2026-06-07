@@ -160,8 +160,8 @@ function ClientDashboard({ myProjects, invoices }: { myProjects: any[], invoices
           </div>
           <div className={styles.cardBody} style={{padding:'20px'}}>
             {invoices.map(inv => (
-              <div key={inv.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px', background: 'rgba(255,255,255,0.03)', borderRadius: '8px', marginBottom: '8px' }}>
-                <div>
+              <div key={inv.id} className={styles.invoiceItem}>
+                <div className={styles.invoiceInfo}>
                   <div style={{ fontWeight: 600, color: 'var(--text)' }}>{inv.description || 'Оплата услуг'}</div>
                   <div style={{ fontSize: '12px', color: 'var(--text-3)' }}>Счет #{inv.id.slice(-6).toUpperCase()}</div>
                 </div>
