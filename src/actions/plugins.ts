@@ -51,8 +51,11 @@ export async function getPlugins() {
   return prisma.plugin.findMany({
     orderBy: { createdAt: 'desc' },
     include: { 
-      uploader: { select: { name: true } },
-      category: { select: { name: true } }
+      category: { select: { name: true } },
+      versions: {
+        orderBy: { createdAt: 'desc' },
+        include: { uploader: { select: { name: true } } }
+      }
     }
   })
 }
@@ -96,20 +99,83 @@ export async function uploadPlugin(formData: FormData) {
     return { error: 'Ошибка загрузки файла в Vercel Blob: ' + error.message }
   }
 
-  // Save to DB
+  // Create Plugin + PluginVersion
   const plugin = await prisma.plugin.create({
     data: {
       name,
-      version,
       description,
-      fileUrl: blobUrl,
-      uploaderId: userId,
       categoryId: categoryId || null,
+      versions: {
+        create: {
+          version,
+          fileUrl: blobUrl,
+          uploaderId: userId,
+        }
+      }
+    },
+    include: {
+      category: { select: { name: true } },
+      versions: {
+        orderBy: { createdAt: 'desc' },
+        include: { uploader: { select: { name: true } } }
+      }
     }
   })
 
   revalidatePath('/[locale]/plugins', 'page')
   return plugin
+}
+
+export async function uploadPluginVersion(formData: FormData) {
+  let userId, role;
+  try {
+    const access = await checkAccess()
+    userId = access.userId
+    role = access.role
+  } catch (err: any) {
+    return { error: err.message }
+  }
+  
+  if (role !== 'OWNER' && role !== 'PM') {
+    return { error: 'У вас нет прав на загрузку плагинов. Только Владелец или PM.' }
+  }
+  
+  const pluginId = formData.get('pluginId') as string
+  const version = formData.get('version') as string
+  const file = formData.get('file') as File
+
+  if (!pluginId || !version) return { error: 'Не указан плагин или версия' }
+  if (!file) return { error: 'Файл не выбран' }
+  if (!file.name.endsWith('.zip')) return { error: 'Разрешены только .zip архивы' }
+
+  if (!process.env.BLOB_READ_WRITE_TOKEN) {
+    return { error: 'В переменные окружения не добавлен BLOB_READ_WRITE_TOKEN. Создайте хранилище Vercel Blob.' }
+  }
+
+  let blobUrl = ''
+  try {
+    const blob = await put(`plugins/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`, file, {
+      access: 'public',
+      token: process.env.BLOB_READ_WRITE_TOKEN
+    })
+    blobUrl = blob.url
+  } catch (error: any) {
+    console.error('Blob upload error:', error)
+    return { error: 'Ошибка загрузки файла в Vercel Blob: ' + error.message }
+  }
+
+  const pluginVersion = await prisma.pluginVersion.create({
+    data: {
+      version,
+      fileUrl: blobUrl,
+      uploaderId: userId,
+      pluginId,
+    },
+    include: { uploader: { select: { name: true } } }
+  })
+
+  revalidatePath('/[locale]/plugins', 'page')
+  return pluginVersion
 }
 
 export async function deletePlugin(id: string) {
@@ -118,14 +184,16 @@ export async function deletePlugin(id: string) {
   const role = (session.user as any).role
   if (role !== 'OWNER' && role !== 'PM') throw new Error('Только Владелец или ПМ могут удалять плагины')
 
-  const plugin = await prisma.plugin.findUnique({ where: { id } })
+  const plugin = await prisma.plugin.findUnique({ where: { id }, include: { versions: true } })
   if (!plugin) return
 
-  // Delete from Vercel Blob
-  try {
-    await del(plugin.fileUrl)
-  } catch (e) {
-    console.error('Failed to delete blob', e)
+  // Delete all versions from Vercel Blob
+  for (const v of plugin.versions) {
+    try {
+      await del(v.fileUrl)
+    } catch (e) {
+      console.error('Failed to delete blob', e)
+    }
   }
 
   // Delete from DB

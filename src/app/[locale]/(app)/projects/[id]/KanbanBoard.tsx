@@ -221,17 +221,6 @@ export default function KanbanBoard({
                     <span className={styles.columnTitle}>{col.label}</span>
                     <span className={styles.columnCount}>{colTasks.length}</span>
                   </div>
-                  {canEdit && (
-                    <button
-                      className={styles.columnAddBtn}
-                      onClick={() => { setAddingCol(col.id); setNewTaskTitle('') }}
-                      title="Добавить задачу"
-                    >
-                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                        <path d="M7 1v12M1 7h12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-                      </svg>
-                    </button>
-                  )}
                 </div>
 
                 {/* Droppable Column */}
@@ -262,6 +251,7 @@ export default function KanbanBoard({
                                 ref={provided.innerRef}
                                 {...provided.draggableProps}
                                 {...provided.dragHandleProps}
+                                style={provided.draggableProps.style}
                                 className={`${styles.taskCard} ${snapshot.isDragging ? styles.taskCardDragging : ''}`}
                                 onClick={() => setSelectedTask(task)}
                               >
@@ -301,28 +291,7 @@ export default function KanbanBoard({
                       })}
                       {provided.placeholder}
 
-                      {/* Quick add form */}
-                      {addingCol === col.id && canEdit && (
-                        <div className={styles.addTaskForm}>
-                          <textarea
-                            autoFocus
-                            className={styles.addTaskInput}
-                            placeholder="Название задачи..."
-                            value={newTaskTitle}
-                            onChange={e => setNewTaskTitle(e.target.value)}
-                            onKeyDown={e => {
-                              if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleQuickAdd(col.id) }
-                              if (e.key === 'Escape') setAddingCol(null)
-                            }}
-                          />
-                          <div className={styles.addTaskActions}>
-                            <button className={styles.addTaskSave} onClick={() => handleQuickAdd(col.id)} disabled={isPending}>
-                              {isPending ? '...' : 'Добавить'}
-                            </button>
-                            <button className={styles.addTaskCancel} onClick={() => setAddingCol(null)}>✕</button>
-                          </div>
-                        </div>
-                      )}
+                      {provided.placeholder}
                     </div>
                   )}
                 </Droppable>

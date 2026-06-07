@@ -44,7 +44,7 @@ model User {
   projectMembers   ProjectMember[]
   tasksAssigned    Task[]         @relation("TaskAssignee")
   comments         Comment[]
-  pluginsUploaded  Plugin[]
+  pluginVersions   PluginVersion[]
   messages         Message[]
   chatMembers      ChatMember[]
   wikiArticles     WikiArticle[]
@@ -128,16 +128,25 @@ model PluginCategory {
 model Plugin {
   id          String   @id @default(cuid())
   name        String
-  version     String
   description String?  @db.Text
-  fileUrl     String
   createdAt   DateTime @default(now())
 
   // Relations
-  uploaderId  String
-  uploader    User     @relation(fields: [uploaderId], references: [id])
   categoryId  String?
   category    PluginCategory? @relation(fields: [categoryId], references: [id])
+  versions    PluginVersion[]
+}
+
+model PluginVersion {
+  id          String   @id @default(cuid())
+  version     String
+  fileUrl     String
+  createdAt   DateTime @default(now())
+
+  pluginId    String
+  plugin      Plugin   @relation(fields: [pluginId], references: [id], onDelete: Cascade)
+  uploaderId  String
+  uploader    User     @relation(fields: [uploaderId], references: [id])
 }
 
 // ─── ФИНАНСЫ ───────────────────────────────────────────────
