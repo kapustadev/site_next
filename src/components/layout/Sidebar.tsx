@@ -32,7 +32,7 @@ function getNavItems(locale: string, role: Role): { section?: string; items: Nav
           { href: `${base}/dashboard`, label: 'Мой проект', icon: <IconProject /> },
           { href: `${base}/chat`, label: 'Сообщения', icon: <IconChat /> },
           { href: `${base}/billing`, label: 'Оплата', icon: <IconFinance /> },
-          { href: `${base}/services`, label: 'Услуги', icon: <IconService /> },
+          { href: `${base}/services`, label: 'Хостинг и домены', icon: <IconService /> },
           { href: `${base}/settings`, label: 'Настройки', icon: <IconSettings /> },
         ]
       }
@@ -49,6 +49,7 @@ function getNavItems(locale: string, role: Role): { section?: string; items: Nav
         { href: `${base}/projects`, label: 'Проекты', icon: <IconProject /> },
         { href: `${base}/tasks`, label: 'Задачи', icon: <IconTask /> },
         { href: `${base}/chat`, label: 'Чат', icon: <IconChat /> },
+        { href: `${base}/services`, label: 'Хостинг и домены', icon: <IconService /> },
       ]
     },
     {
@@ -67,7 +68,6 @@ function getNavItems(locale: string, role: Role): { section?: string; items: Nav
       section: 'Управление',
       items: [
         { href: `${base}/finances`, label: 'Финансы', icon: <IconFinance /> },
-        { href: `${base}/services`, label: 'Услуги', icon: <IconService /> },
         { href: `${base}/admin/users`, label: 'Команда', icon: <IconTeam /> },
         { href: `${base}/settings`, label: 'Настройки', icon: <IconSettings /> },
       ]

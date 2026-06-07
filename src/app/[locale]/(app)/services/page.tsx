@@ -1,6 +1,7 @@
 import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
 import { getServices } from '@/actions/services'
+import shellStyles from '@/components/layout/shell.module.css'
 import ServicesClient from './ServicesClient'
 
 export const metadata = {
@@ -20,11 +21,13 @@ export default async function ServicesPage() {
   const projects = await prisma.project.findMany({ select: { id: true, name: true } })
 
   return (
-    <ServicesClient 
-      services={services} 
-      canEdit={canEdit} 
-      clients={clients} 
-      projects={projects}
-    />
+    <div className={shellStyles.content}>
+      <ServicesClient 
+        services={services} 
+        canEdit={canEdit} 
+        clients={clients} 
+        projects={projects}
+      />
+    </div>
   )
 }
