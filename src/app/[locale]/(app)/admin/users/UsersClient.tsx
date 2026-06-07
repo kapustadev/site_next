@@ -438,7 +438,6 @@ export default function UsersClient({
             <tr>
               <th>Пользователь</th>
               <th>Роль</th>
-              <th>Изменить роль</th>
               <th>Дата добавления</th>
               <th style={{ textAlign: 'right' }}>Действия</th>
             </tr>
@@ -446,7 +445,7 @@ export default function UsersClient({
           <tbody>
             {filtered.length === 0 ? (
               <tr className={styles.emptyRow}>
-                <td colSpan={5}>{search ? 'Ничего не найдено' : 'Пользователей пока нет'}</td>
+                <td colSpan={4}>{search ? 'Ничего не найдено' : 'Пользователей пока нет'}</td>
               </tr>
             ) : filtered.map(user => (
               <tr key={user.id}>
@@ -474,13 +473,6 @@ export default function UsersClient({
                   <span className={`${styles.roleBadge} ${ROLE_STYLES[user.role]}`}>
                     {ROLE_LABELS[user.role]}
                   </span>
-                </td>
-                <td>
-                  <RoleDropdown
-                    value={user.role}
-                    onChange={r => handleRoleChange(user.id, r)}
-                    disabled={user.id === currentUserId}
-                  />
                 </td>
                 <td>
                   <span className={styles.joinDate}>{formatDate(user.createdAt)}</span>
