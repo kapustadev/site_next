@@ -77,7 +77,8 @@
     padding: 8px 0;
     border: none;
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start;
+    gap: 12px;
     align-items: center;
     font-size: 13px;
   }
