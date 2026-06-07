@@ -18,11 +18,21 @@ export default async function ProjectsPage({
   if (!session?.user) redirect(`/${locale}`)
 
   const role = (session.user as any).role
+  const userId = (session.user as any).id
 
   const projects = await prisma.project.findMany({
     include: { manager: true, tasks: true },
     orderBy: { createdAt: 'desc' }
   })
+
+  // Only owners and PMs can create projects, so we only need users for them
+  let users: any[] = []
+  if (role === 'OWNER' || role === 'PM') {
+    users = await prisma.user.findMany({
+      select: { id: true, name: true, role: true, email: true },
+      orderBy: { name: 'asc' }
+    })
+  }
 
   const canCreate = role === 'OWNER' || role === 'PM'
 
@@ -34,6 +44,8 @@ export default async function ProjectsPage({
         canCreate={role === 'OWNER' || role === 'PM'}
         colors={PROJECT_COLORS}
         role={role}
+        users={users}
+        currentUserId={userId}
       />
     </div>
   )

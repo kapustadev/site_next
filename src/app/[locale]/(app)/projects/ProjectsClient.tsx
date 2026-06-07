@@ -25,17 +25,34 @@ export default function ProjectsClient({
   canCreate,
   colors,
   role,
+  users,
+  currentUserId,
 }: {
   projects: Project[]
   locale: string
   canCreate: boolean
   colors: string[]
   role: string
+  users: { id: string; name: string; role: string; email: string }[]
+  currentUserId: string
 }) {
   const [projects, setProjects] = useState(initialProjects)
   const [showModal, setShowModal] = useState(false)
   const [isPending, startTransition] = useTransition()
-  const [form, setForm] = useState({ name: '', description: '', budget: '', currency: 'PLN', deadline: '' })
+  const [form, setForm] = useState({
+    name: '',
+    description: '',
+    budget: '',
+    currency: 'PLN',
+    deadline: '',
+    managerId: currentUserId,
+    clientId: '',
+    teamMemberIds: [] as string[],
+  })
+
+  const availableManagers = users.filter(u => u.role === 'OWNER' || u.role === 'PM')
+  const availableClients = users.filter(u => u.role === 'CLIENT')
+  const availableTeam = users.filter(u => u.role === 'OWNER' || u.role === 'PM' || u.role === 'EMPLOYEE')
 
   function getProgress(tasks: { status: string }[]) {
     if (!tasks.length) return 0
@@ -62,9 +79,12 @@ export default function ProjectsClient({
         budget: form.budget ? Number(form.budget) : undefined,
         currency: form.currency,
         deadline: form.deadline || undefined,
+        managerId: form.managerId,
+        clientId: form.clientId || undefined,
+        teamMemberIds: form.teamMemberIds,
       })
-      setProjects(prev => [{ ...p, tasks: [], manager: null } as any, ...prev])
-      setForm({ name: '', description: '', budget: '', currency: 'PLN', deadline: '' })
+      setProjects(prev => [{ ...p, tasks: [], manager: users.find(u => u.id === (form.managerId || currentUserId)) } as any, ...prev])
+      setForm({ name: '', description: '', budget: '', currency: 'PLN', deadline: '', managerId: currentUserId, clientId: '', teamMemberIds: [] })
       setShowModal(false)
     })
   }
@@ -245,6 +265,56 @@ export default function ProjectsClient({
                     />
                   </div>
                 </div>
+
+                <div className={styles.formRow}>
+                  <div className={styles.formField}>
+                    <label className={styles.formLabel}>Project Manager</label>
+                    <select
+                      className={styles.formInput}
+                      value={form.managerId}
+                      onChange={e => setForm(f => ({ ...f, managerId: e.target.value }))}
+                      style={{ appearance: 'auto' }}
+                    >
+                      {availableManagers.map(m => (
+                        <option key={m.id} value={m.id}>{m.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className={styles.formField}>
+                    <label className={styles.formLabel}>Клиент</label>
+                    <select
+                      className={styles.formInput}
+                      value={form.clientId}
+                      onChange={e => setForm(f => ({ ...f, clientId: e.target.value }))}
+                      style={{ appearance: 'auto' }}
+                    >
+                      <option value="">— Без клиента —</option>
+                      {availableClients.map(c => (
+                        <option key={c.id} value={c.id}>{c.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div className={styles.formField}>
+                  <label className={styles.formLabel}>Команда</label>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '150px', overflowY: 'auto', padding: '10px', background: 'rgba(0,0,0,0.3)', borderRadius: 'var(--radius)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                    {availableTeam.map(u => (
+                      <label key={u.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', cursor: 'pointer', color: 'var(--text-2)' }}>
+                        <input
+                          type="checkbox"
+                          checked={form.teamMemberIds.includes(u.id)}
+                          onChange={e => {
+                            if (e.target.checked) setForm(f => ({ ...f, teamMemberIds: [...f.teamMemberIds, u.id] }))
+                            else setForm(f => ({ ...f, teamMemberIds: f.teamMemberIds.filter(id => id !== u.id) }))
+                          }}
+                        />
+                        {u.name} <span style={{ fontSize: '11px', color: 'var(--text-3)', background: 'rgba(255,255,255,0.1)', padding: '2px 6px', borderRadius: '4px' }}>{u.role}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
               </div>
               <div className={styles.modalFooter}>
                 <button type="button" className={styles.btnCancel} onClick={() => setShowModal(false)}>

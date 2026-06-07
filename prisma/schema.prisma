@@ -22,6 +22,13 @@ enum TaskStatus {
   DONE
 }
 
+enum InvoiceStatus {
+  PENDING
+  PAID
+  OVERDUE
+  CANCELLED
+}
+
 model User {
   id            String    @id @default(cuid())
   name          String
@@ -32,13 +39,16 @@ model User {
   updatedAt     DateTime  @updatedAt
 
   // Relations
-  projectsManaged Project[] @relation("ProjectManager")
-  tasksAssigned   Task[]    @relation("TaskAssignee")
-  comments        Comment[]
-  pluginsUploaded Plugin[]
-  messages        Message[]
-  chatMembers     ChatMember[]
-  wikiArticles    WikiArticle[]
+  projectsManaged  Project[]      @relation("ProjectManager")
+  projectsAsClient Project[]      @relation("ProjectClient")
+  projectMembers   ProjectMember[]
+  tasksAssigned    Task[]         @relation("TaskAssignee")
+  comments         Comment[]
+  pluginsUploaded  Plugin[]
+  messages         Message[]
+  chatMembers      ChatMember[]
+  wikiArticles     WikiArticle[]
+  invoices         Invoice[]      @relation("InvoiceClient")
 }
 
 model Project {
@@ -54,9 +64,27 @@ model Project {
 
   // Relations
   managerId   String?
-  manager     User?    @relation("ProjectManager", fields: [managerId], references: [id])
+  manager     User?    @relation("ProjectManager", fields: [managerId], references: [id], onDelete: SetNull)
+
+  clientId    String?
+  client      User?    @relation("ProjectClient", fields: [clientId], references: [id], onDelete: SetNull)
+
+  members     ProjectMember[]
   tasks       Task[]
   transactions Transaction[]
+  invoices    Invoice[]
+}
+
+model ProjectMember {
+  id        String   @id @default(cuid())
+  joinedAt  DateTime @default(now())
+
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
 }
 
 model Task {
@@ -119,9 +147,6 @@ enum TransactionType {
   EXPENSE  // Расход (зарплата, сервисы, покупки)
 }
 
-// Поддерживаемые валюты
-// PLN — базовая внутренняя валюта (злотые)
-// Остальные конвертируются через NBP API
 enum Currency {
   PLN
   USD
@@ -137,30 +162,45 @@ model Transaction {
   id          String          @id @default(cuid())
   type        TransactionType
   description String
-  category    String?         // "Зарплата", "Сервисы", "Реклама", "Клиент" и т.д.
+  category    String?
 
-  // Оригинальная сумма в валюте клиента/поставщика
   amount      Float
   currency    Currency        @default(PLN)
-
-  // Итоговая сумма в PLN (автоконвертация по курсу NBP)
   amountPln   Float
-  exchangeRate Float          @default(1) // курс на дату транзакции
+  exchangeRate Float          @default(1)
 
   date        DateTime        @default(now())
   createdAt   DateTime        @default(now())
 
-  // Привязка к проекту (опционально)
   projectId   String?
   project     Project?        @relation(fields: [projectId], references: [id], onDelete: SetNull)
 }
 
-// Кэш курсов валют NBP (обновляется раз в час)
 model ExchangeRateCache {
   id          String   @id @default(cuid())
-  currency    String   @unique  // "USD", "EUR", ...
-  rateToPln   Float             // 1 единица валюты = X PLN
+  currency    String   @unique
+  rateToPln   Float
   fetchedAt   DateTime @default(now())
+}
+
+// ─── ФАКТУРЫ (БИЛЛИНГ) ─────────────────────────────────────
+
+model Invoice {
+  id          String        @id @default(cuid())
+  number      String        // "INV-001"
+  description String?       @db.Text
+  amount      Float
+  currency    Currency      @default(PLN)
+  status      InvoiceStatus @default(PENDING)
+  issuedAt    DateTime      @default(now())
+  dueDate     DateTime?
+  paidAt      DateTime?
+
+  projectId   String
+  project     Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  clientId    String
+  client      User          @relation("InvoiceClient", fields: [clientId], references: [id], onDelete: Cascade)
 }
 
 // ─── ВНУТРЕННИЕ КОММУНИКАЦИИ ───────────────────────────────────
@@ -170,7 +210,7 @@ model ChatGroup {
   name      String?
   isDirect  Boolean      @default(false)
   createdAt DateTime     @default(now())
-  
+
   members   ChatMember[]
   messages  Message[]
 }

@@ -31,6 +31,8 @@ function getNavItems(locale: string, role: Role): { section?: string; items: Nav
         items: [
           { href: `${base}/dashboard`, label: 'Мой проект', icon: <IconProject /> },
           { href: `${base}/chat`, label: 'Сообщения', icon: <IconChat /> },
+          { href: `${base}/billing`, label: 'Оплата', icon: <IconFinance /> },
+          { href: `${base}/settings`, label: 'Настройки', icon: <IconSettings /> },
         ]
       }
     ]

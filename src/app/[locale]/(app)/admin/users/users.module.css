@@ -277,21 +277,168 @@
 .roleEmployee { background: rgba(34,197,94,0.12);   color: #22c55e; border: 1px solid rgba(34,197,94,0.2); }
 .roleClient   { background: rgba(99,102,241,0.12);  color: #a5b4fc; border: 1px solid rgba(99,102,241,0.2); }
 
-/* ── Role select ── */
-.roleSelect {
-  background: rgba(0,0,0,0.3);
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: var(--radius-sm);
-  padding: 5px 10px;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--text);
-  cursor: pointer;
-  font-family: var(--font);
-  transition: border-color var(--duration) var(--ease);
+/* ── Custom Role Dropdown ── */
+.roleDropdownWrap {
+  position: relative;
+  display: inline-block;
 }
 
-.roleSelect:focus { outline: none; border-color: var(--blue); }
+.roleDropdownTrigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 99px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all var(--duration) var(--ease);
+  border-width: 1px;
+  border-style: solid;
+}
+
+.roleDropdownTrigger:hover {
+  filter: brightness(1.15);
+}
+
+.roleDropdownChevron {
+  display: flex;
+  align-items: center;
+  opacity: 0.7;
+  transition: transform 0.2s var(--ease);
+}
+
+.roleDropdownChevronOpen {
+  transform: rotate(180deg);
+}
+
+.roleDropdownDisabled {
+  font-size: 12px;
+  color: var(--text-3);
+}
+
+.roleDropdownMenu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 50;
+  background: rgba(15, 17, 23, 0.97);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: var(--radius);
+  padding: 4px;
+  min-width: 140px;
+  box-shadow: 0 16px 48px rgba(0,0,0,0.5);
+  animation: dropdownIn 0.15s var(--ease);
+}
+
+@keyframes dropdownIn {
+  from { opacity: 0; transform: translateY(-6px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0)    scale(1); }
+}
+
+.roleDropdownItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 7px;
+  background: none;
+  border: none;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-2);
+  cursor: pointer;
+  transition: all var(--duration) var(--ease);
+  font-family: var(--font);
+  text-align: left;
+}
+
+.roleDropdownItem:hover {
+  background: rgba(255,255,255,0.05);
+  color: var(--text);
+}
+
+.roleDropdownItemActive {
+  color: var(--text);
+  background: rgba(1,14,208,0.12);
+}
+
+.roleDot {
+  width: 8px;
+  height: 8px;
+  min-width: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Role selector grid (inside modal) */
+.roleSelectorGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.roleSelectorCard {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 12px 14px;
+  background: rgba(0,0,0,0.25);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all var(--duration) var(--ease);
+  position: relative;
+  text-align: left;
+  font-family: var(--font);
+}
+
+.roleSelectorCard:hover {
+  border-color: rgba(255,255,255,0.13);
+  background: rgba(255,255,255,0.03);
+}
+
+.roleSelectorCardActive {
+  border-color: rgba(1,14,208,0.4) !important;
+  background: rgba(1,14,208,0.1) !important;
+}
+
+.roleSelectorDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-bottom: 4px;
+}
+
+.roleSelectorLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.roleSelectorDesc {
+  font-size: 11px;
+  color: var(--text-3);
+  line-height: 1.3;
+}
+
+.roleSelectorCheck {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  color: #818cf8;
+  display: flex;
+}
+
+
 
 /* ── Actions ── */
 .actions {

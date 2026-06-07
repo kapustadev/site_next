@@ -14,15 +14,15 @@ export async function getProjects() {
   const userId = (session.user as any).id
 
   if (role === 'CLIENT') {
-    // Client sees only projects where they are the manager (placeholder — later link clients to projects)
     return prisma.project.findMany({
-      include: { manager: true, tasks: true },
+      where: { clientId: userId },
+      include: { manager: true, tasks: true, members: { include: { user: { select: { id: true, name: true, role: true } } } }, client: true },
       orderBy: { createdAt: 'desc' }
     })
   }
 
   return prisma.project.findMany({
-    include: { manager: true, tasks: true },
+    include: { manager: true, tasks: true, members: { include: { user: { select: { id: true, name: true, role: true } } } }, client: true },
     orderBy: { createdAt: 'desc' }
   })
 }
@@ -33,6 +33,9 @@ export async function createProject(data: {
   budget?: number
   currency?: string
   deadline?: string
+  managerId?: string
+  teamMemberIds?: string[]
+  clientId?: string
 }) {
   const session = await auth()
   if (!session?.user) throw new Error('Не авторизован')
@@ -40,7 +43,7 @@ export async function createProject(data: {
   if (role !== 'OWNER' && role !== 'PM') throw new Error('Нет прав')
 
   const userId = (session.user as any).id
-  
+
   let budgetPln: number | undefined = undefined
   const currency = data.currency || 'PLN'
 
@@ -75,6 +78,13 @@ export async function createProject(data: {
     budgetPln = data.budget
   }
 
+  // Collect unique member IDs (always include creating user)
+  const memberIds = Array.from(new Set([
+    userId,
+    ...(data.managerId ? [data.managerId] : []),
+    ...(data.teamMemberIds || []),
+  ]))
+
   const project = await prisma.project.create({
     data: {
       name: data.name,
@@ -83,8 +93,13 @@ export async function createProject(data: {
       currency: currency as any,
       budgetPln,
       deadline: data.deadline ? new Date(data.deadline) : undefined,
-      managerId: userId,
-    }
+      managerId: data.managerId || userId,
+      clientId: data.clientId || undefined,
+      members: {
+        create: memberIds.map(id => ({ userId: id }))
+      }
+    },
+    include: { manager: true, tasks: true, members: { include: { user: { select: { id: true, name: true, role: true } } } }, client: true }
   })
 
   revalidatePath('/[locale]/projects', 'page')
@@ -207,6 +222,38 @@ export async function updateUserRole(userId: string, role: string) {
 
   await prisma.user.update({ where: { id: userId }, data: { role: role as any } })
   revalidatePath('/[locale]/admin/users', 'page')
+}
+
+export async function updateUser(userId: string, data: {
+  name: string
+  email: string
+  role: string
+  password?: string
+}) {
+  const session = await auth()
+  if (!session?.user) throw new Error('Не авторизован')
+  if ((session.user as any).role !== 'OWNER') throw new Error('Нет прав')
+
+  const updateData: any = {
+    name: data.name,
+    email: data.email,
+    role: data.role as any,
+  }
+
+  if (data.password && data.password.length >= 6) {
+    const bcrypt = await import('bcryptjs')
+    updateData.passwordHash = await bcrypt.hash(data.password, 12)
+  } else if (data.password && data.password.length > 0) {
+    throw new Error('Пароль должен содержать минимум 6 символов')
+  }
+
+  const user = await prisma.user.update({
+    where: { id: userId },
+    data: updateData,
+  })
+
+  revalidatePath('/[locale]/admin/users', 'page')
+  return { ...user, passwordHash: undefined }
 }
 
 export async function deleteUser(userId: string) {
