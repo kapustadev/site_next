@@ -385,3 +385,41 @@
 .notificationOverdue .notificationDate {
   color: var(--red);
 }
+
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  .grid {
+    grid-template-columns: 1fr;
+  }
+  .formRow {
+    flex-direction: column;
+    gap: 16px;
+  }
+  .notificationItem {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .notificationDate {
+    margin-left: 0;
+  }
+  .modal {
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .modal {
+    margin-top: auto;
+    border-radius: 20px 20px 0 0;
+  }
+  .modalOverlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+}

@@ -327,3 +327,36 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+@media (max-width: 768px) {
+  .wikiLayout {
+    flex-direction: column;
+    height: auto;
+    min-height: calc(100vh - 80px);
+  }
+  .sidebar {
+    width: 100%;
+    min-width: 100%;
+    border-right: none;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    max-height: 300px;
+  }
+  .articleView {
+    padding: 20px;
+  }
+  .modal {
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .modal {
+    margin-top: auto;
+    border-radius: 20px 20px 0 0;
+  }
+  .modalOverlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+}
