@@ -413,7 +413,7 @@ export default function PluginsClient({
                   <label className={styles.formLabel}>Категория</label>
                   <select
                     className={styles.formInput}
-                    style={{ appearance: 'auto' }}
+                   
                     value={form.categoryId}
                     onChange={e => setForm(f => ({ ...f, categoryId: e.target.value }))}
                   >

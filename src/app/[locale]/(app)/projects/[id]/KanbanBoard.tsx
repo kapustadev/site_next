@@ -378,7 +378,7 @@ export default function KanbanBoard({
                 <div className={styles.formRow}>
                   <div className={styles.formField}>
                     <label className={styles.formLabel}>Исполнитель</label>
-                    <select className={styles.formInput} value={modalForm.assigneeId} onChange={e => setModalForm(f => ({ ...f, assigneeId: e.target.value }))} style={{ appearance: 'auto' }}>
+                    <select className={styles.formInput} value={modalForm.assigneeId} onChange={e => setModalForm(f => ({ ...f, assigneeId: e.target.value }))}>
                       <option value="">— Не назначен —</option>
                       {users.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
                     </select>
@@ -390,7 +390,7 @@ export default function KanbanBoard({
                 </div>
                 <div className={styles.formField}>
                   <label className={styles.formLabel}>Колонка</label>
-                  <select className={styles.formInput} value={showAddModal} onChange={e => setShowAddModal(e.target.value)} style={{ appearance: 'auto' }}>
+                  <select className={styles.formInput} value={showAddModal} onChange={e => setShowAddModal(e.target.value)}>
                     {columns.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                   </select>
                 </div>

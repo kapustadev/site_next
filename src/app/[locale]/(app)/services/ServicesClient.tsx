@@ -195,7 +195,7 @@ export default function ServicesClient({
                   </div>
                   <div className={styles.formField}>
                     <label className={styles.formLabel}>Тип *</label>
-                    <select className={styles.formInput} value={form.type} onChange={e => setForm(f => ({...f, type: e.target.value}))} style={{appearance:'auto'}}>
+                    <select className={styles.formInput} value={form.type} onChange={e => setForm(f => ({...f, type: e.target.value}))}>
                       <option value="HOSTING">Хостинг</option>
                       <option value="DOMAIN">Домен</option>
                       <option value="OTHER">Другое</option>
@@ -210,7 +210,7 @@ export default function ServicesClient({
                   </div>
                   <div className={styles.formField}>
                     <label className={styles.formLabel}>Валюта</label>
-                    <select className={styles.formInput} value={form.currency} onChange={e => setForm(f => ({...f, currency: e.target.value}))} style={{appearance:'auto'}}>
+                    <select className={styles.formInput} value={form.currency} onChange={e => setForm(f => ({...f, currency: e.target.value}))}>
                       <option value="PLN">PLN</option>
                       <option value="USD">USD</option>
                       <option value="EUR">EUR</option>
@@ -219,7 +219,7 @@ export default function ServicesClient({
                   </div>
                   <div className={styles.formField}>
                     <label className={styles.formLabel}>Цикл</label>
-                    <select className={styles.formInput} value={form.billingCycle} onChange={e => setForm(f => ({...f, billingCycle: e.target.value}))} style={{appearance:'auto'}}>
+                    <select className={styles.formInput} value={form.billingCycle} onChange={e => setForm(f => ({...f, billingCycle: e.target.value}))}>
                       <option value="YEARLY">В год</option>
                       <option value="MONTHLY">В месяц</option>
                     </select>
@@ -234,14 +234,14 @@ export default function ServicesClient({
                 <div className={styles.formRow}>
                   <div className={styles.formField}>
                     <label className={styles.formLabel}>Клиент *</label>
-                    <select className={styles.formInput} value={form.clientId} onChange={e => setForm(f => ({...f, clientId: e.target.value}))} required style={{appearance:'auto'}}>
+                    <select className={styles.formInput} value={form.clientId} onChange={e => setForm(f => ({...f, clientId: e.target.value}))} required>
                       <option value="">— Выберите клиента —</option>
                       {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                     </select>
                   </div>
                   <div className={styles.formField}>
                     <label className={styles.formLabel}>Привязка к проекту</label>
-                    <select className={styles.formInput} value={form.projectId} onChange={e => setForm(f => ({...f, projectId: e.target.value}))} style={{appearance:'auto'}}>
+                    <select className={styles.formInput} value={form.projectId} onChange={e => setForm(f => ({...f, projectId: e.target.value}))}>
                       <option value="">— Без проекта —</option>
                       {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                     </select>

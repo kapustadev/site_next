@@ -181,7 +181,7 @@ export default function FinancesClient({
                 <div className={styles.formRow}>
                   <div className={styles.formField}>
                     <label className={styles.formLabel}>Тип *</label>
-                    <select className={styles.formInput} value={form.type} onChange={e => setForm(f => ({...f, type: e.target.value as any}))} style={{appearance:'auto'}}>
+                    <select className={styles.formInput} value={form.type} onChange={e => setForm(f => ({...f, type: e.target.value as any}))}>
                       <option value="INCOME">Доход</option>
                       <option value="EXPENSE">Расход</option>
                     </select>
@@ -204,7 +204,7 @@ export default function FinancesClient({
                   </div>
                   <div className={styles.formField}>
                     <label className={styles.formLabel}>Валюта *</label>
-                    <select className={styles.formInput} value={form.currency} onChange={e => setForm(f => ({...f, currency: e.target.value}))} style={{appearance:'auto'}}>
+                    <select className={styles.formInput} value={form.currency} onChange={e => setForm(f => ({...f, currency: e.target.value}))}>
                       {SUPPORTED_CURRENCIES.map(c => <option key={c} value={c}>{c}</option>)}
                     </select>
                   </div>
@@ -223,7 +223,7 @@ export default function FinancesClient({
                   </div>
                   <div className={styles.formField}>
                     <label className={styles.formLabel}>Привязка к проекту</label>
-                    <select className={styles.formInput} value={form.projectId} onChange={e => setForm(f => ({...f, projectId: e.target.value}))} style={{appearance:'auto'}}>
+                    <select className={styles.formInput} value={form.projectId} onChange={e => setForm(f => ({...f, projectId: e.target.value}))}>
                       <option value="">— Без проекта —</option>
                       {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                     </select>

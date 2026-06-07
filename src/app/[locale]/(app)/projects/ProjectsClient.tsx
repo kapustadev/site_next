@@ -312,7 +312,7 @@ export default function ProjectsClient({
                       className={styles.formInput}
                       value={form.managerId}
                       onChange={e => setForm(f => ({ ...f, managerId: e.target.value }))}
-                      style={{ appearance: 'auto' }}
+                     
                     >
                       {availableManagers.map(m => (
                         <option key={m.id} value={m.id}>{m.name}</option>
@@ -325,7 +325,7 @@ export default function ProjectsClient({
                       className={styles.formInput}
                       value={form.clientId}
                       onChange={e => setForm(f => ({ ...f, clientId: e.target.value }))}
-                      style={{ appearance: 'auto' }}
+                     
                     >
                       <option value="">— Без клиента —</option>
                       {availableClients.map(c => (
