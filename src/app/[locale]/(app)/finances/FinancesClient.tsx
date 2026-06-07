@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { createTransaction, deleteTransaction } from '@/actions/finances'
+import CustomDatePicker from '@/components/ui/CustomDatePicker'
 import styles from './finances.module.css'
 
 interface Transaction {
@@ -188,7 +189,7 @@ export default function FinancesClient({
                   </div>
                   <div className={styles.formField}>
                     <label className={styles.formLabel}>Дата *</label>
-                    <input className={styles.formInput} type="date" value={form.date} onChange={e => setForm(f => ({...f, date: e.target.value}))} required />
+                    <CustomDatePicker className={styles.formInput} value={form.date} onChange={val => setForm(f => ({...f, date: val}))} required />
                   </div>
                 </div>
 

@@ -6,6 +6,7 @@ import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea
 import { createTask, updateTaskColumn } from '@/actions'
 import { createKanbanColumn, updateKanbanColumn, deleteKanbanColumn, sendProjectStatusMessage } from '@/actions/kanban'
 import { addComment, deleteComment } from '@/actions/communications'
+import CustomDatePicker from '@/components/ui/CustomDatePicker'
 import styles from '../projects.module.css'
 
 interface Comment {
@@ -397,7 +398,7 @@ export default function KanbanBoard({
                   </div>
                   <div className={styles.formField}>
                     <label className={styles.formLabel}>Дедлайн</label>
-                    <input className={styles.formInput} type="date" value={modalForm.dueDate} onChange={e => setModalForm(f => ({ ...f, dueDate: e.target.value }))} />
+                    <CustomDatePicker className={styles.formInput} value={modalForm.dueDate} onChange={val => setModalForm(f => ({ ...f, dueDate: val }))} />
                   </div>
                 </div>
                 <div className={styles.formField}>

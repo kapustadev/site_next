@@ -18,7 +18,7 @@ export default async function ServicesPage() {
   const services = await getServices()
   
   const clients = canEdit ? await prisma.user.findMany({ where: { role: 'CLIENT' } }) : []
-  const projects = await prisma.project.findMany({ select: { id: true, name: true } })
+  const projects = await prisma.project.findMany({ select: { id: true, name: true, clientId: true } })
 
   return (
     <div className={shellStyles.content}>

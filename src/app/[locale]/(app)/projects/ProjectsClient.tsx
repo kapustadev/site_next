@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react'
 import Link from 'next/link'
 import { createProject, deleteProject, updateProject } from '@/actions'
+import CustomDatePicker from '@/components/ui/CustomDatePicker'
 import styles from './projects.module.css'
 
 const PROJECT_COLORS = ['#010ED0', '#7c3aed', '#22c55e', '#f59e0b', '#ef4444', '#06b6d4']
@@ -48,7 +49,7 @@ export default function ProjectsClient({
     description: '',
     budget: '',
     currency: 'PLN',
-    deadline: '',
+    deadline: '' as any,
     managerId: currentUserId,
     clientId: '',
     teamMemberIds: [] as string[],
@@ -82,7 +83,7 @@ export default function ProjectsClient({
         description: form.description || undefined,
         budget: form.budget ? Number(form.budget) : undefined,
         currency: form.currency,
-        deadline: form.deadline || undefined,
+        deadline: form.deadline ? new Date(form.deadline) : undefined,
         managerId: form.managerId,
         clientId: form.clientId || undefined,
         teamMemberIds: form.teamMemberIds,

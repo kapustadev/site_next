@@ -320,3 +320,68 @@
   color: var(--text-3);
   font-size: 14px;
 }
+
+/* Notifications Block */
+.notificationsBlock {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 32px;
+}
+
+.notificationsTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-1);
+  margin-bottom: 16px;
+}
+
+.notificationsTitle svg {
+  color: var(--yellow);
+}
+
+.notificationsList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.notificationItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  border-left: 3px solid var(--yellow);
+  font-size: 14px;
+}
+
+.notificationOverdue {
+  border-left-color: var(--red);
+  background: rgba(239, 68, 68, 0.05);
+}
+
+.notificationText {
+  color: var(--text-2);
+}
+
+.notificationText strong {
+  color: var(--text-1);
+  font-weight: 600;
+}
+
+.notificationDate {
+  font-weight: 500;
+  color: var(--text-1);
+  white-space: nowrap;
+  margin-left: 16px;
+}
+
+.notificationOverdue .notificationDate {
+  color: var(--red);
+}

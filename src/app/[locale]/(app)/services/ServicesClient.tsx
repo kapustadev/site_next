@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { createService, updateService, deleteService } from '@/actions/services'
+import CustomDatePicker from '@/components/ui/CustomDatePicker'
 import styles from './services.module.css'
 
 export default function ServicesClient({
@@ -30,6 +31,8 @@ export default function ServicesClient({
     clientId: '',
     projectId: ''
   })
+
+  const filteredProjects = form.clientId ? projects.filter(p => p.clientId === form.clientId) : []
 
   function handleEdit(s: any) {
     setForm({
@@ -100,6 +103,15 @@ export default function ServicesClient({
     })
   }
 
+  const now = new Date()
+  const nextMonth = new Date()
+  nextMonth.setDate(now.getDate() + 30)
+
+  const upcomingServices = services.filter(s => {
+    const due = new Date(s.nextDueDate)
+    return due <= nextMonth
+  }).sort((a, b) => new Date(a.nextDueDate).getTime() - new Date(b.nextDueDate).getTime())
+
   return (
     <>
       <div className={styles.header}>
@@ -116,6 +128,32 @@ export default function ServicesClient({
           </button>
         )}
       </div>
+
+      {upcomingServices.length > 0 && (
+        <div className={styles.notificationsBlock}>
+          <div className={styles.notificationsTitle}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+            Уведомления об оплате
+          </div>
+          <div className={styles.notificationsList}>
+            {upcomingServices.map(s => {
+              const due = new Date(s.nextDueDate)
+              const isOverdue = due < now
+              return (
+                <div key={s.id} className={`${styles.notificationItem} ${isOverdue ? styles.notificationOverdue : ''}`}>
+                  <div className={styles.notificationText}>
+                    {isOverdue ? 'Просрочено:' : 'Скоро заканчивается:'} у клиента <strong>{s.client?.name || '—'}</strong> услуга <strong>{s.name}</strong> 
+                    {' '}({s.type === 'HOSTING' ? 'Хостинг' : s.type === 'DOMAIN' ? 'Домен' : 'Услуга'}).
+                  </div>
+                  <div className={styles.notificationDate}>
+                    до {due.toLocaleDateString('ru-RU')}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
 
       <div className={styles.grid}>
         {services.length === 0 ? (
@@ -227,8 +265,8 @@ export default function ServicesClient({
                 </div>
 
                 <div className={styles.formField}>
-                  <label className={styles.formLabel}>Дата следующей оплаты *</label>
-                  <input className={styles.formInput} type="date" value={form.nextDueDate} onChange={e => setForm(f => ({...f, nextDueDate: e.target.value}))} required />
+                  <label className={styles.formLabel}>Следующая оплата *</label>
+                  <CustomDatePicker className={styles.formInput} value={form.nextDueDate} onChange={val => setForm(f => ({...f, nextDueDate: val}))} required />
                 </div>
 
                 <div className={styles.formRow}>
@@ -242,8 +280,10 @@ export default function ServicesClient({
                   <div className={styles.formField}>
                     <label className={styles.formLabel}>Привязка к проекту</label>
                     <select className={styles.formInput} value={form.projectId} onChange={e => setForm(f => ({...f, projectId: e.target.value}))}>
-                      <option value="">— Без проекта —</option>
-                      {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                      <option value="">— Без привязки —</option>
+                      {filteredProjects.map(p => (
+                        <option key={p.id} value={p.id}>{p.name}</option>
+                      ))}
                     </select>
                   </div>
                 </div>
