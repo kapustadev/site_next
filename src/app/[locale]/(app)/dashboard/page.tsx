@@ -1,5 +1,6 @@
 import { auth } from '@/auth'
 import { redirect } from 'next/navigation'
+import CheckoutButton from '@/components/ui/CheckoutButton'
 import styles from './dashboard.module.css'
 import shellStyles from '@/components/layout/shell.module.css'
 
@@ -142,7 +143,7 @@ function WorkerDashboard({ name, role, myTasks, myProjects }: { name: string; ro
 }
 
 /* ── CLIENT Dashboard ── */
-function ClientDashboard({ myProjects }: { myProjects: any[] }) {
+function ClientDashboard({ myProjects, invoices }: { myProjects: any[], invoices: any[] }) {
   const p = myProjects[0]
   if (!p) return <div style={{textAlign:'center', padding:'40px'}}>У вас пока нет проектов</div>
 
@@ -151,6 +152,26 @@ function ClientDashboard({ myProjects }: { myProjects: any[] }) {
 
   return (
     <>
+      {invoices.length > 0 && (
+        <div className={styles.card} style={{marginBottom:'16px', border: '1px solid rgba(1, 14, 208, 0.4)'}}>
+          <div className={styles.cardHeader} style={{ background: 'rgba(1, 14, 208, 0.1)' }}>
+            <span className={styles.cardTitle}>Счета к оплате</span>
+            <span className={styles.statLabel} style={{color:'var(--red)'}}>● Ожидает оплаты</span>
+          </div>
+          <div className={styles.cardBody} style={{padding:'20px'}}>
+            {invoices.map(inv => (
+              <div key={inv.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px', background: 'rgba(255,255,255,0.03)', borderRadius: '8px', marginBottom: '8px' }}>
+                <div>
+                  <div style={{ fontWeight: 600, color: 'var(--text)' }}>{inv.description || 'Оплата услуг'}</div>
+                  <div style={{ fontSize: '12px', color: 'var(--text-3)' }}>Счет #{inv.id.slice(-6).toUpperCase()}</div>
+                </div>
+                <CheckoutButton invoiceId={inv.id} amount={inv.amount} />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div className={styles.card} style={{marginBottom:'16px'}}>
         <div className={styles.cardHeader}>
           <span className={styles.cardTitle}>Ваш проект</span>
@@ -234,6 +255,7 @@ export default async function DashboardPage({
   
   let myTasks: any[] = []
   let myProjects: any[] = []
+  let myInvoices: any[] = []
   let chartData = {
     months: [] as string[],
     income: [] as number[],
@@ -283,9 +305,13 @@ export default async function DashboardPage({
 
   if (role === 'CLIENT') {
     myProjects = await prisma.project.findMany({
+      where: { clientId: (session.user as any).id },
       include: { tasks: true },
       orderBy: { createdAt: 'desc' },
       take: 1
+    })
+    myInvoices = await prisma.invoice.findMany({
+      where: { clientId: (session.user as any).id, status: 'PENDING' }
     })
   }
 
@@ -325,7 +351,7 @@ export default async function DashboardPage({
 
       {role === 'OWNER' && <OwnerDashboard finances={{revenue, expenses, profit}} projectsCount={activeProjectsCount} chart={chartData} />}
       {(role === 'PM' || role === 'EMPLOYEE') && <WorkerDashboard name={name} role={role} myTasks={myTasks} myProjects={myProjects} />}
-      {role === 'CLIENT' && <ClientDashboard myProjects={myProjects} />}
+      {role === 'CLIENT' && <ClientDashboard myProjects={myProjects} invoices={myInvoices} />}
     </div>
   )
 }
