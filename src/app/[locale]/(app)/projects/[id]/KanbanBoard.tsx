@@ -121,7 +121,19 @@ export default function KanbanBoard({
     if (destCol?.notifyClient) {
       // Show notification modal
       const taskTitle = tasks.find(t => t.id === draggableId)?.title || 'задачу'
-      setNotifyMsg(`Добрый день! Мы взяли задачу «${taskTitle}» в работу.`)
+      let msg = ''
+      if (destCol.name === 'В работе') {
+        msg = `Добрый день! Мы взяли задачу «${taskTitle}» в работу.`
+      } else if (destCol.name === 'Тестирование') {
+        msg = `Добрый день! Мы выполнили правку по задаче «${taskTitle}», она готова, мы её тестируем.`
+      } else if (destCol.name === 'Ревью') {
+        msg = `Добрый день! Теперь ваша очередь проверить задачу «${taskTitle}».`
+      } else if (destCol.name === 'Готово') {
+        msg = `Задача «${taskTitle}» была проверена, утверждена и закончена.`
+      } else {
+        msg = `Задача «${taskTitle}» перенесена в статус «${destCol.name}».`
+      }
+      setNotifyMsg(msg)
       setShowNotifyModal({ taskId: draggableId, destColId: newStatusId })
     } else {
       // Just move without notification

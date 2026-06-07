@@ -103,8 +103,8 @@ export async function createProject(data: {
           { name: 'Backlog', color: '#64748b', order: 0 },
           { name: 'To Do', color: '#3b82f6', order: 1 },
           { name: 'В работе', color: '#f59e0b', order: 2, notifyClient: true },
-          { name: 'Ревью', color: '#8b5cf6', order: 3 },
-          { name: 'Тестирование', color: '#06b6d4', order: 4 },
+          { name: 'Тестирование', color: '#06b6d4', order: 3, notifyClient: true },
+          { name: 'Ревью', color: '#8b5cf6', order: 4, notifyClient: true },
           { name: 'Готово', color: '#22c55e', order: 5, notifyClient: true },
         ]
       }
