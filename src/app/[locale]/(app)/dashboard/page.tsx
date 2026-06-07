@@ -249,8 +249,8 @@ export default async function DashboardPage({
     const transactions = await prisma.transaction.findMany({
       where: { date: { gte: firstDayOfMonth } }
     })
-    revenue = transactions.filter(t => t.type === 'INCOME').reduce((sum, t) => sum + t.amountPln, 0)
-    expenses = transactions.filter(t => t.type === 'EXPENSE').reduce((sum, t) => sum + t.amountPln, 0)
+    revenue = transactions.filter(t => t.type === 'INCOME').reduce((sum, t) => sum + t.amount, 0)
+    expenses = transactions.filter(t => t.type === 'EXPENSE').reduce((sum, t) => sum + t.amount, 0)
     profit = revenue - expenses
     activeProjectsCount = await prisma.project.count()
 
@@ -262,8 +262,8 @@ export default async function DashboardPage({
         where: { date: { gte: start, lte: end } }
       })
       chartData.months.push(start.toLocaleString('ru', { month: 'short' }))
-      chartData.income.push(txs.filter(t => t.type === 'INCOME').reduce((sum, t) => sum + t.amountPln, 0))
-      chartData.expense.push(txs.filter(t => t.type === 'EXPENSE').reduce((sum, t) => sum + t.amountPln, 0))
+      chartData.income.push(txs.filter(t => t.type === 'INCOME').reduce((sum, t) => sum + t.amount, 0))
+      chartData.expense.push(txs.filter(t => t.type === 'EXPENSE').reduce((sum, t) => sum + t.amount, 0))
     }
   }
 

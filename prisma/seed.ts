@@ -49,7 +49,7 @@ async function main() {
         budget: 15000,
         currency: 'PLN',
         budgetPln: 15000,
-        deadline: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
+        dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
         managerId: owner.id,
         clientId: client.id,
         members: {
@@ -58,11 +58,19 @@ async function main() {
             { userId: client.id }
           ]
         },
+        columns: {
+          create: [
+            { name: 'Backlog', color: '#64748b', order: 0 },
+            { name: 'To Do', color: '#3b82f6', order: 1 },
+            { name: 'В работе', color: '#f59e0b', order: 2, notifyClient: true },
+            { name: 'Готово', color: '#22c55e', order: 5, notifyClient: true },
+          ]
+        },
         tasks: {
           create: [
-            { title: 'Дизайн главной страницы', status: 'DONE' },
-            { title: 'Верстка главной', status: 'IN_PROGRESS' },
-            { title: 'Интеграция CMS', status: 'TODO' }
+            { title: 'Дизайн главной страницы' },
+            { title: 'Верстка главной' },
+            { title: 'Интеграция CMS' }
           ]
         }
       }
@@ -79,25 +87,19 @@ async function main() {
     await prisma.invoice.createMany({
       data: [
         {
-          number: 'INV-001',
           projectId: project.id,
           clientId: client.id,
           amount: 5000,
-          currency: 'PLN',
           status: 'PAID',
           description: 'Аванс за разработку',
-          issuedAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
-          paidAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
+          dueDate: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
         },
         {
-          number: 'INV-002',
           projectId: project.id,
           clientId: client.id,
           amount: 5000,
-          currency: 'PLN',
           status: 'PENDING',
           description: 'Оплата этапа дизайна',
-          issuedAt: new Date(),
           dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
         }
       ]

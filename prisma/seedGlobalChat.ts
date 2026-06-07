@@ -22,7 +22,7 @@ async function main() {
   const users = await prisma.user.findMany({ where: { role: { in: ['OWNER', 'PM', 'EMPLOYEE'] } } })
   for (const user of users) {
     await prisma.chatMember.upsert({
-      where: { groupId_userId: { groupId: general.id, userId: user.id } },
+      where: { userId_groupId: { groupId: general.id, userId: user.id } },
       create: { groupId: general.id, userId: user.id },
       update: {}
     })

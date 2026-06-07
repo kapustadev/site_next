@@ -17,27 +17,11 @@ export default async function TasksPage({
   
   const tasks = await prisma.task.findMany({
     where: { assigneeId: userId },
-    include: { project: true },
+    include: { project: true, column: true },
     orderBy: { dueDate: 'asc' }
   })
 
-  const statusColors: Record<string, string> = {
-    BACKLOG: 'rgba(255,255,255,0.1)',
-    TODO: 'rgba(245, 158, 11, 0.15)',
-    IN_PROGRESS: 'rgba(1, 14, 208, 0.15)',
-    REVIEW: 'rgba(168, 85, 247, 0.15)',
-    TESTING: 'rgba(236, 72, 153, 0.15)',
-    DONE: 'rgba(34, 197, 94, 0.15)',
-  }
 
-  const statusLabels: Record<string, string> = {
-    BACKLOG: 'Бэклог',
-    TODO: 'К выполнению',
-    IN_PROGRESS: 'В работе',
-    REVIEW: 'Ревью',
-    TESTING: 'Тестирование',
-    DONE: 'Готово',
-  }
 
   return (
     <div className={shellStyles.content}>
@@ -84,12 +68,16 @@ export default async function TasksPage({
                       {task.project.name}
                     </td>
                     <td style={{ padding: '14px 20px' }}>
-                      <span style={{
-                        background: statusColors[task.status], padding: '4px 10px', borderRadius: 99,
-                        fontSize: 11, fontWeight: 700, color: 'var(--text)'
-                      }}>
-                        {statusLabels[task.status]}
-                      </span>
+                      {task.column ? (
+                        <span style={{
+                          background: task.column.color + '20', padding: '4px 10px', borderRadius: 99,
+                          fontSize: 11, fontWeight: 700, color: task.column.color
+                        }}>
+                          {task.column.name}
+                        </span>
+                      ) : (
+                        <span style={{ color: 'var(--text-3)', fontSize: 11 }}>—</span>
+                      )}
                     </td>
                     <td style={{ padding: '14px 20px', fontSize: 13, color: task.dueDate && new Date(task.dueDate) < new Date() ? 'var(--red)' : 'var(--text-2)' }}>
                       {task.dueDate ? new Date(task.dueDate).toLocaleDateString('ru') : '—'}

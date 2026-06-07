@@ -3,7 +3,6 @@
 import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
-import { put, del } from '@vercel/blob'
 
 // ─── CHAT ──────────────────────────────────────────────────
 
@@ -35,7 +34,7 @@ export async function getMessages(groupId: string) {
   const userId = (session.user as any).id
 
   const member = await prisma.chatMember.findUnique({
-    where: { groupId_userId: { groupId, userId } }
+    where: { userId_groupId: { groupId, userId } }
   })
   if (!member) throw new Error('Нет доступа к этой группе')
 
@@ -56,38 +55,20 @@ export async function sendMessage(formData: FormData) {
 
   const groupId = formData.get('groupId') as string
   const content = formData.get('content') as string
-  const file = formData.get('file') as File | null
 
   if (!groupId) throw new Error('Нет ID группы')
-  if (!content && !file) throw new Error('Сообщение пустое')
+  if (!content) throw new Error('Сообщение пустое')
 
   const member = await prisma.chatMember.findUnique({
-    where: { groupId_userId: { groupId, userId } }
+    where: { userId_groupId: { groupId, userId } }
   })
   if (!member) throw new Error('Нет доступа')
-
-  let fileUrl = null
-  let fileType = null
-
-  if (file && file.size > 0) {
-    const isImage = file.type.startsWith('image/')
-    const isVideo = file.type.startsWith('video/')
-    fileType = isImage ? 'image' : isVideo ? 'video' : 'file'
-
-    const blob = await put(`chat/${Date.now()}_${file.name}`, file, {
-      access: 'public',
-      token: process.env.BLOB_READ_WRITE_TOKEN
-    })
-    fileUrl = blob.url
-  }
 
   const msg = await prisma.message.create({
     data: {
       groupId,
       authorId: userId,
-      content: content || null,
-      fileUrl,
-      fileType
+      content: content
     },
     include: {
       author: { select: { id: true, name: true, role: true } }

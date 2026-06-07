@@ -55,11 +55,10 @@ export default function FinancesClient({
       const t = await createTransaction({
         type: form.type,
         description: form.description,
-        category: form.category,
+        category: form.category || 'General',
         amount: Number(form.amount),
-        currency: form.currency,
-        projectId: form.projectId,
-        date: form.date,
+        projectId: form.projectId || undefined,
+        date: form.date || undefined
       })
       const proj = projects.find(p => p.id === form.projectId)
       setTransactions(prev => [{ ...t, project: proj ? { name: proj.name } : null } as any, ...prev].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()))
