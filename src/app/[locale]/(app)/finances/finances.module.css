@@ -49,6 +49,26 @@
   box-shadow: 0 8px 28px var(--blue-glow);
 }
 
+.addIncomeBtn {
+  background: #22c55e;
+  box-shadow: 0 4px 20px rgba(34,197,94,0.3);
+}
+
+.addIncomeBtn:hover {
+  background: #16a34a;
+  box-shadow: 0 8px 28px rgba(34,197,94,0.4);
+}
+
+.addExpenseBtn {
+  background: #ef4444;
+  box-shadow: 0 4px 20px rgba(239,68,68,0.3);
+}
+
+.addExpenseBtn:hover {
+  background: #dc2626;
+  box-shadow: 0 8px 28px rgba(239,68,68,0.4);
+}
+
 .statsRow {
   display: grid;
   grid-template-columns: repeat(3, 1fr);

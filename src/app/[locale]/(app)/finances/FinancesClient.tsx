@@ -76,6 +76,11 @@ export default function FinancesClient({
     })
   }
 
+  function handleAdd(type: 'INCOME' | 'EXPENSE') {
+    setForm(f => ({ ...f, type }))
+    setShowModal(true)
+  }
+
   return (
     <>
       <div className={styles.header}>
@@ -83,12 +88,20 @@ export default function FinancesClient({
           <div className={styles.title}>Финансы</div>
           <div className={styles.subtitle}>Учёт доходов и расходов с автоконвертацией NBP</div>
         </div>
-        <button className={styles.addBtn} onClick={() => setShowModal(true)}>
-          <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
-            <path d="M6.5 1v11M1 6.5h11" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
-          </svg>
-          Добавить транзакцию
-        </button>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <button className={`${styles.addBtn} ${styles.addIncomeBtn}`} onClick={() => handleAdd('INCOME')}>
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+              <path d="M6.5 1v11M1 6.5h11" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+            </svg>
+            Добавить доход
+          </button>
+          <button className={`${styles.addBtn} ${styles.addExpenseBtn}`} onClick={() => handleAdd('EXPENSE')}>
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+              <path d="M1 6.5h11" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+            </svg>
+            Добавить расход
+          </button>
+        </div>
       </div>
 
       <div className={styles.statsRow}>
@@ -174,19 +187,14 @@ export default function FinancesClient({
         <div className={styles.modalOverlay} onClick={() => setShowModal(false)}>
           <div className={styles.modal} onClick={e => e.stopPropagation()}>
             <div className={styles.modalHeader}>
-              <span className={styles.modalTitle}>Новая транзакция</span>
+              <span className={styles.modalTitle}>
+                {form.type === 'INCOME' ? 'Новый доход' : 'Новый расход'}
+              </span>
               <button className={styles.modalClose} onClick={() => setShowModal(false)}>✕</button>
             </div>
             <form onSubmit={handleCreate}>
               <div className={styles.modalBody}>
                 <div className={styles.formRow}>
-                  <div className={styles.formField}>
-                    <label className={styles.formLabel}>Тип *</label>
-                    <select className={styles.formInput} value={form.type} onChange={e => setForm(f => ({...f, type: e.target.value as any}))}>
-                      <option value="INCOME">Доход</option>
-                      <option value="EXPENSE">Расход</option>
-                    </select>
-                  </div>
                   <div className={styles.formField}>
                     <label className={styles.formLabel}>Дата *</label>
                     <CustomDatePicker className={styles.formInput} value={form.date} onChange={val => setForm(f => ({...f, date: val}))} required />
