@@ -14,19 +14,24 @@
   --blue-light: #1a27e0;
   --blue-glow: rgba(1, 14, 208, 0.35);
   --blue-dim: rgba(1, 14, 208, 0.15);
+  --purple: #7c3aed;
+  --purple-glow: rgba(124, 58, 237, 0.3);
+  --cyan: #06b6d4;
 
   /* Dark surfaces */
   --bg: #0b0d10;
-  --bg-2: #111315;
-  --surface: #161a1f;
-  --surface-2: #1d2128;
+  --bg-2: #0f1115;
+  --surface: #141720;
+  --surface-2: #1c2030;
+  --surface-3: #222637;
   --border: rgba(255, 255, 255, 0.07);
   --border-hover: rgba(255, 255, 255, 0.14);
+  --border-active: rgba(1, 14, 208, 0.5);
 
   /* Text */
-  --text: #f0f2f5;
+  --text: #eef0f5;
   --text-2: #8b929d;
-  --text-3: #505763;
+  --text-3: #4b5260;
 
   /* Status */
   --green: #22c55e;
@@ -42,6 +47,10 @@
   /* Transitions */
   --ease: cubic-bezier(0.4, 0, 0.2, 1);
   --duration: 0.2s;
+
+  /* Glass */
+  --glass-bg: rgba(20, 23, 32, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.08);
 }
 
 /* ---------- Reset ---------- */
@@ -84,17 +93,17 @@ input, textarea, select {
 }
 
 /* ---------- Scrollbar ---------- */
-::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--surface-2); border-radius: 99px; }
-::-webkit-scrollbar-thumb:hover { background: var(--border-hover); }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.15); }
 
 /* ---------- Utility ---------- */
 .glass {
-  background: rgba(22, 26, 31, 0.7);
+  background: var(--glass-bg);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid var(--border);
+  border: 1px solid var(--glass-border);
 }
 
 .btn-primary {
@@ -155,7 +164,30 @@ input, textarea, select {
   letter-spacing: 0.02em;
 }
 
-.badge-blue { background: var(--blue-dim); color: var(--blue-light); }
+.badge-blue { background: var(--blue-dim); color: #818cf8; }
 .badge-green { background: rgba(34, 197, 94, 0.15); color: var(--green); }
 .badge-yellow { background: rgba(245, 158, 11, 0.15); color: var(--yellow); }
 .badge-red { background: rgba(239, 68, 68, 0.15); color: var(--red); }
+
+/* ---------- Global Animations ---------- */
+@keyframes float1 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(40px, 30px) scale(1.1); }
+}
+@keyframes float2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(-30px, -40px) scale(1.08); }
+}
+@keyframes float3 {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); }
+  33% { transform: translate(-30%, -60%) scale(1.15); }
+  66% { transform: translate(-70%, -40%) scale(0.9); }
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(0.8); }
+}
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}

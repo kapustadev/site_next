@@ -1,18 +1,19 @@
 /* ============================================================
    KAPUSTA.DEV — Finances Styles
+   Redesigned to match Login page aesthetic
    ============================================================ */
 
 .header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 28px;
+  margin-bottom: 32px;
   flex-wrap: wrap;
   gap: 12px;
 }
 
 .title {
-  font-size: 22px;
+  font-size: 24px;
   font-weight: 800;
   color: var(--text);
   letter-spacing: -0.03em;
@@ -20,8 +21,8 @@
 
 .subtitle {
   font-size: 13px;
-  color: var(--text-2);
-  margin-top: 3px;
+  color: var(--text-3);
+  margin-top: 4px;
 }
 
 .addBtn {
@@ -33,17 +34,19 @@
   border: none;
   border-radius: var(--radius);
   padding: 0 18px;
-  height: 38px;
+  height: 40px;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   transition: all var(--duration) var(--ease);
-  box-shadow: 0 4px 16px var(--blue-glow);
+  box-shadow: 0 4px 20px var(--blue-glow);
+  letter-spacing: -0.01em;
 }
 
 .addBtn:hover {
   background: var(--blue-light);
   transform: translateY(-1px);
+  box-shadow: 0 8px 28px var(--blue-glow);
 }
 
 .statsRow {
@@ -54,13 +57,34 @@
 }
 
 .statCard {
-  background: var(--surface);
-  border: 1px solid var(--border);
+  background: rgba(20, 23, 32, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.07);
   border-radius: var(--radius-lg);
-  padding: 20px 22px;
+  padding: 22px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
+  transition: all var(--duration) var(--ease);
+  position: relative;
+  overflow: hidden;
+}
+
+.statCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+}
+
+.statCard:hover {
+  border-color: rgba(255,255,255,0.12);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(0,0,0,0.25);
 }
 
 .statTop {
@@ -70,21 +94,21 @@
 }
 
 .statLabel {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--text-2);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-3);
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
 }
 
 .statIcon {
-  width: 32px;
-  height: 32px;
-  border-radius: 9px;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 16px;
+  font-size: 17px;
 }
 
 .statValue {
@@ -96,10 +120,24 @@
 }
 
 .tableWrap {
-  background: var(--surface);
-  border: 1px solid var(--border);
+  background: rgba(20, 23, 32, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.07);
   border-radius: var(--radius-lg);
   overflow: hidden;
+  position: relative;
+}
+
+.tableWrap::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.07), transparent);
+  pointer-events: none;
 }
 
 .tableWrap :global(table) {
@@ -108,21 +146,21 @@
 }
 
 .tableWrap :global(thead tr) {
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid rgba(255,255,255,0.05);
 }
 
 .tableWrap :global(th) {
   text-align: left;
-  padding: 12px 20px;
-  font-size: 11px;
+  padding: 14px 22px;
+  font-size: 10px;
   font-weight: 700;
   color: var(--text-3);
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
 }
 
 .tableWrap :global(tbody tr) {
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid rgba(255,255,255,0.04);
   transition: background var(--duration);
 }
 
@@ -130,14 +168,14 @@
 .tableWrap :global(tbody tr:hover) { background: rgba(255,255,255,0.02); }
 
 .tableWrap :global(td) {
-  padding: 14px 20px;
+  padding: 14px 22px;
   vertical-align: middle;
   font-size: 13px;
   color: var(--text);
 }
 
-.amountIncome { color: var(--green); font-weight: 600; }
-.amountExpense { color: var(--red); font-weight: 600; }
+.amountIncome { color: var(--green); font-weight: 700; }
+.amountExpense { color: var(--red); font-weight: 700; }
 
 .subAmount {
   font-size: 11px;
@@ -148,24 +186,32 @@
 .typeBadge {
   display: inline-flex;
   align-items: center;
-  padding: 3px 8px;
+  padding: 3px 10px;
   border-radius: 99px;
   font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.06em;
 }
 
-.typeBadgeIncome { background: rgba(34,197,94,0.12); color: #22c55e; }
-.typeBadgeExpense { background: rgba(239,68,68,0.12); color: #ef4444; }
+.typeBadgeIncome {
+  background: rgba(34,197,94,0.15);
+  color: #22c55e;
+  border: 1px solid rgba(34,197,94,0.2);
+}
+.typeBadgeExpense {
+  background: rgba(239,68,68,0.12);
+  color: #ef4444;
+  border: 1px solid rgba(239,68,68,0.2);
+}
 
 .delBtn {
   background: none;
   border: none;
   color: var(--text-3);
   cursor: pointer;
-  padding: 4px;
-  border-radius: 6px;
+  padding: 6px;
+  border-radius: 8px;
   display: inline-flex;
   transition: all var(--duration);
 }
@@ -179,8 +225,9 @@
 .modalOverlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.6);
-  backdrop-filter: blur(4px);
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   z-index: 100;
   display: flex;
   align-items: center;
@@ -192,44 +239,64 @@
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
 .modal {
-  background: var(--bg-2);
-  border: 1px solid var(--border);
+  background: rgba(15, 17, 21, 0.95);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255,255,255,0.1);
   border-radius: var(--radius-xl);
   width: 100%;
   max-width: 500px;
   animation: slideUp 0.2s ease;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.5);
 }
 
-@keyframes slideUp { from { transform: translateY(16px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
 .modalHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 20px 24px;
-  border-bottom: 1px solid var(--border);
+  padding: 22px 24px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
 }
 
 .modalTitle { font-size: 16px; font-weight: 700; color: var(--text); }
-.modalClose { background: none; border: none; color: var(--text-2); cursor: pointer; padding: 4px; border-radius: 6px; }
-.modalClose:hover { background: var(--surface); color: var(--text); }
+.modalClose {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.07);
+  color: var(--text-2);
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 8px;
+  display: flex;
+  transition: all var(--duration);
+}
+.modalClose:hover { background: rgba(255,255,255,0.08); color: var(--text); }
 
 .modalBody { padding: 24px; display: flex; flex-direction: column; gap: 16px; }
 
 .formField { display: flex; flex-direction: column; gap: 6px; }
-.formLabel { font-size: 11px; font-weight: 700; color: var(--text-2); letter-spacing: 0.06em; text-transform: uppercase; }
+.formLabel {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-3);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
 
 .formInput {
-  background: var(--surface);
-  border: 1px solid var(--border);
+  background: rgba(0,0,0,0.3);
+  border: 1px solid rgba(255,255,255,0.08);
   border-radius: var(--radius);
-  padding: 10px 14px;
+  padding: 11px 14px;
   font-size: 14px;
   color: var(--text);
   font-family: var(--font);
   width: 100%;
+  transition: all var(--duration);
 }
-.formInput:focus { border-color: var(--blue); outline: none; box-shadow: 0 0 0 3px var(--blue-dim); }
+.formInput:focus { border-color: var(--blue); outline: none; box-shadow: 0 0 0 3px rgba(1,14,208,0.15); }
+.formInput::placeholder { color: var(--text-3); }
 
 .formRow { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
@@ -238,15 +305,38 @@
   gap: 8px;
   justify-content: flex-end;
   padding: 16px 24px;
-  border-top: 1px solid var(--border);
+  border-top: 1px solid rgba(255,255,255,0.06);
 }
 
-.btnCancel { height: 38px; padding: 0 16px; background: var(--surface); color: var(--text-2); border: 1px solid var(--border); border-radius: var(--radius); font-size: 13px; font-weight: 500; cursor: pointer; }
-.btnCancel:hover { border-color: var(--border-hover); color: var(--text); }
+.btnCancel {
+  height: 40px;
+  padding: 0 16px;
+  background: rgba(255,255,255,0.04);
+  color: var(--text-2);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: var(--radius);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--duration);
+}
+.btnCancel:hover { border-color: rgba(255,255,255,0.14); color: var(--text); }
 
-.btnSave { height: 38px; padding: 0 20px; background: var(--blue); color: #fff; border: none; border-radius: var(--radius); font-size: 13px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 14px var(--blue-glow); }
-.btnSave:hover { background: var(--blue-light); }
-.btnSave:disabled { opacity: 0.5; cursor: not-allowed; }
+.btnSave {
+  height: 40px;
+  padding: 0 22px;
+  background: var(--blue);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 16px var(--blue-glow);
+  transition: all var(--duration);
+}
+.btnSave:hover { background: var(--blue-light); transform: translateY(-1px); }
+.btnSave:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
 .nbpNote {
   font-size: 11px;

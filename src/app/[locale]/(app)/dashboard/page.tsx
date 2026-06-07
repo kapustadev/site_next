@@ -294,7 +294,32 @@ export default async function DashboardPage({
       <div className={styles.pageHeader}>
         <div>
           <div className={styles.pageTitle}>{greeting}, {name.split(' ')[0]}! 👋</div>
-          <div className={styles.pageSub}>{greetings[role] ?? 'Дашборд'}</div>
+          <div className={styles.pageSub}>{greetings[role] ?? 'Дашборд'} · {new Date().toLocaleDateString('ru-RU', { weekday: 'long', day: 'numeric', month: 'long' })}</div>
+        </div>
+        <div style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '8px',
+          background: 'rgba(1, 14, 208, 0.12)',
+          border: '1px solid rgba(1, 14, 208, 0.3)',
+          borderRadius: '99px',
+          padding: '6px 14px',
+          fontSize: '12px',
+          fontWeight: 600,
+          color: '#a5b4fc',
+          letterSpacing: '0.04em',
+          textTransform: 'uppercase',
+        }}>
+          <span style={{
+            width: 6,
+            height: 6,
+            borderRadius: '50%',
+            background: '#010ED0',
+            boxShadow: '0 0 8px #010ED0',
+            display: 'inline-block',
+            animation: 'pulse 2s infinite',
+          }} />
+          Система активна
         </div>
       </div>
 
