@@ -83,7 +83,7 @@ export default function ProjectsClient({
         description: form.description || undefined,
         budget: form.budget ? Number(form.budget) : undefined,
         currency: form.currency,
-        deadline: form.deadline ? new Date(form.deadline) : undefined,
+        deadline: form.deadline || undefined,
         managerId: form.managerId,
         clientId: form.clientId || undefined,
         teamMemberIds: form.teamMemberIds,
