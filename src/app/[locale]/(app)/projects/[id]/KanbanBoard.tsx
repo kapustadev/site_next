@@ -3,8 +3,8 @@
 import { useState, useTransition } from 'react'
 import Link from 'next/link'
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd'
-import { createTask } from '@/actions'
-import { updateTaskColumn, createKanbanColumn, updateKanbanColumn, deleteKanbanColumn, sendProjectStatusMessage } from '@/actions/kanban'
+import { createTask, updateTaskColumn } from '@/actions'
+import { createKanbanColumn, updateKanbanColumn, deleteKanbanColumn, sendProjectStatusMessage } from '@/actions/kanban'
 import { addComment, deleteComment } from '@/actions/communications'
 import styles from '../projects.module.css'
 
