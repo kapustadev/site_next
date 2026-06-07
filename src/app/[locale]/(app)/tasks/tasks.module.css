@@ -1,0 +1,101 @@
+.responsiveTableWrapper {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.responsiveTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.responsiveTable th {
+  text-align: left;
+  padding: 12px 20px;
+  font-size: 11px;
+  color: var(--text-3);
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--border);
+}
+
+.responsiveTable td {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+  color: var(--text);
+}
+
+.responsiveTable tr {
+  transition: background 0.2s;
+}
+
+.responsiveTable tr:hover {
+  background: rgba(255,255,255,0.02);
+}
+
+.tdTitle {
+  font-weight: 600;
+}
+
+.tdBadge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+@media (max-width: 768px) {
+  .responsiveTableWrapper {
+    background: transparent;
+    border: none;
+    overflow: visible;
+  }
+  .responsiveTable, 
+  .responsiveTable thead, 
+  .responsiveTable tbody, 
+  .responsiveTable th, 
+  .responsiveTable td, 
+  .responsiveTable tr {
+    display: block;
+  }
+  .responsiveTable thead {
+    display: none;
+  }
+  .responsiveTable tr {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    margin-bottom: 16px;
+    padding: 16px;
+  }
+  .responsiveTable tr:hover {
+    background: var(--surface);
+  }
+  .responsiveTable td {
+    padding: 8px 0;
+    border: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+  }
+  .responsiveTable td::before {
+    content: attr(data-label);
+    font-size: 11px;
+    color: var(--text-3);
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+  .tdTitle {
+    font-size: 16px !important;
+    padding-bottom: 12px !important;
+    border-bottom: 1px solid var(--border) !important;
+    margin-bottom: 8px;
+    display: block !important;
+  }
+  .tdTitle::before {
+    display: none !important;
+  }
+}
